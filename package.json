@@ -1,0 +1,35 @@
+{
+  "name": "photo-caption-local-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "prebuild": "tsx scripts/normalize-tsconfig.ts",
+    "postbuild": "tsx scripts/normalize-tsconfig.ts",
+    "start": "next start",
+    "typecheck": "tsx scripts/normalize-tsconfig.ts && tsc --noEmit",
+    "ai:verify": "tsx scripts/verify-openai-client.ts",
+    "storage:verify": "tsx scripts/verify-supabase-storage.ts",
+    "db:init": "tsx db/init.ts",
+    "db:seed": "tsx db/seed.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.102.1",
+    "better-sqlite3": "^12.8.0",
+    "next": "^16.2.2",
+    "openai": "^6.33.0",
+    "pg": "^8.20.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.5.2",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

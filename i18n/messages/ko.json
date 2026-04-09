@@ -1,0 +1,836 @@
+{
+  "app": {
+    "metadata": {
+      "title": "감성 사진 문구 앱",
+      "description": "로컬 브라우저 환경에서 사진 업로드, mock 분석, 결과 확인이 가능한 프로젝트"
+    }
+  },
+  "uploadPage": {
+    "shell": {
+      "badge": "Photo Upload Starter",
+      "title": "사진 업로드와 mock 분석"
+    },
+    "hero": {
+      "title": "이미지를 업로드하고 저장한 뒤 mock 분석 결과를 확인할 수 있습니다",
+      "description": "사진 한 장으로 감성 문구와 바로 사용할 콘텐츠를 만들 수 있습니다.",
+      "steps": {
+        "upload": "사진 올리기",
+        "analyze": "분석 실행",
+        "save": "이미지 저장"
+      }
+    },
+    "form": {
+      "selectedLabel": "선택한 이미지",
+      "emptySelection": "아직 선택한 파일이 없습니다",
+      "chooseButton": "이미지 선택",
+      "uploadButton": "업로드 실행",
+      "uploadingButton": "업로드 진행 중",
+      "analyzeButton": "mock 분석 실행",
+      "analyzingButton": "mock 분석 진행 중",
+      "historyButton": "히스토리 보기",
+      "helper": "이미지 파일만 업로드할 수 있습니다.",
+      "nextStepTitle": "다음 단계",
+      "nextStepDescription": "업로드가 끝났습니다. 이제 분석을 실행하면 문구와 완성 이미지를 바로 볼 수 있습니다.",
+      "nextStepButton": "분석 시작"
+    },
+    "preview": {
+      "title": "업로드 결과 미리보기",
+      "description": "업로드가 완료되면 저장된 이미지와 메타데이터가 표시됩니다.",
+      "metaTitle": "저장 메타데이터",
+      "metaExpand": "펼치기",
+      "metaCollapse": "접기",
+      "metaName": "원본 파일명",
+      "metaPath": "저장 경로",
+      "metaCreatedAt": "저장 시각"
+    },
+    "analysis": {
+      "title": "분석 결과",
+      "description": "이미지를 기준으로 생성된 mock 분석 결과를 한곳에서 확인할 수 있습니다.",
+      "imageAltPrefix": "분석 대상 이미지",
+      "sceneType": "장면 유형",
+      "moodCategory": "감성 카테고리",
+      "shortReview": "한줄 평가",
+      "longReview": "상세 설명",
+      "recommendedTextPosition": "추천 문구 위치",
+      "wallpaperScore": "배경 활용 점수",
+      "socialScore": "소셜 활용 점수",
+      "commercialScore": "상업 활용 점수",
+      "phrases": "문구 리스트",
+      "recommendedPhrase": "추천 문구",
+      "phraseScore": "점수",
+      "phraseReason": "이유",
+      "captions": "캡션 리스트",
+      "hashtags": "해시태그",
+      "sourceOpenAi": "AI 생성",
+      "sourceMock": "mock 생성",
+      "warnings": {
+        "heuristicPreset": "감성 분류는 현재 규칙 기반으로 추정되었습니다.",
+        "openAiFallbackToMock": "AI 생성에 실패해 mock 결과로 대체되었습니다.",
+        "openAiKeyMissing": "OpenAI API 키가 없어 mock 결과를 표시합니다."
+      },
+      "copyButton": "복사",
+      "copiedButton": "복사됨",
+      "emptyList": "표시할 항목이 없습니다.",
+      "applyRecommendedButton": "콘텐츠 세트에 적용",
+      "cta": {
+        "title": "바로 사용 가능한 결과",
+        "description": "완성 이미지를 저장하고, 캡션과 해시태그를 바로 가져갈 수 있습니다.",
+        "saveImage": "완성 이미지 저장",
+        "copyCaption": "인스타 캡션 복사",
+        "copyHashtags": "해시태그 복사",
+        "refresh": "이미지 다시 만들기",
+        "currentPhrase": "현재 적용 중인 문구",
+        "currentCaption": "현재 적용 중인 캡션",
+        "detailsTitle": "분석 요약"
+      },
+      "tabs": {
+        "review": "총평",
+        "phrases": "문구 리스트",
+        "captions": "캡션 리스트",
+        "hashtags": "해시태그"
+      },
+      "instagram": {
+        "captionCopy": "인스타 캡션 복사",
+        "hashtagCopy": "해시태그 복사",
+        "sharePlaceholder": "인스타 공유 예정",
+        "contentSetCreate": "콘텐츠 세트 생성",
+        "contentSetCreating": "콘텐츠 세트 생성 중",
+        "contentSetDownload": "이미지 다운로드",
+        "contentSetTextCopy": "세트 텍스트 복사",
+        "contentSetPreviewTitle": "인스타 콘텐츠 세트",
+        "contentSetCaptionLabel": "캡션",
+        "contentSetHashtagLabel": "해시태그",
+        "contentSetImageLabel": "문구 포함 이미지",
+        "overlayTextLabel": "이미지 문구",
+        "overlayCaptionLabel": "대표 캡션",
+        "overlayPositionLabel": "글씨 위치",
+        "overlayFontLabel": "폰트",
+        "overlaySizeLabel": "글씨 크기",
+        "overlayWeightLabel": "글씨 굵기",
+        "overlayColorLabel": "글씨 색상",
+        "imageFilterLabel": "사진 필터",
+        "imageFilterStrengthLabel": "필터 강도",
+        "overlayHorizontalLabel": "가로 위치",
+        "overlayVerticalLabel": "세로 위치",
+        "overlayShadowLabel": "텍스트 그림자",
+        "overlayBackgroundLabel": "배경 박스",
+        "overlayLineHeightLabel": "줄 간격",
+        "presetSectionTitle": "스타일 프리셋",
+        "presetExpandButton": "펼치기",
+        "presetCollapseButton": "접기",
+        "presetNamePlaceholder": "프리셋 이름 입력",
+        "presetSaveButton": "현재 스타일 저장",
+        "presetSavedSectionTitle": "저장한 프리셋",
+        "presetRenameButton": "이름 변경",
+        "presetDeleteButton": "삭제",
+        "presetRenamePlaceholder": "새 프리셋 이름 입력",
+        "presetRenameConfirmButton": "저장",
+        "presetRenameCancelButton": "취소",
+        "presetExportButton": "내보내기",
+        "presetImportButton": "가져오기",
+        "presets": {
+          "emotionalCard": "감성 카드형",
+          "brightIntro": "밝은 소개형",
+          "deepFocus": "어두운 몰입형",
+          "dawnBlue": "새벽 블루",
+          "vintageCream": "빈티지 크림",
+          "sunsetGlow": "선셋 글로우"
+        },
+        "options": {
+          "positions": {
+            "topLeft": "상단 왼쪽",
+            "topCenter": "상단 중앙",
+            "topRight": "상단 오른쪽",
+            "leftCenter": "왼쪽 중앙",
+            "center": "중앙",
+            "rightCenter": "오른쪽 중앙",
+            "bottomLeft": "하단 왼쪽",
+            "bottomCenter": "하단 중앙",
+            "bottomRight": "하단 오른쪽"
+          },
+          "fonts": {
+            "sans": "모던 산세리프",
+            "serif": "감성 세리프",
+            "mono": "모노",
+            "display": "강한 디스플레이",
+            "handwritten": "손글씨 느낌"
+          },
+          "sizes": {
+            "xxsmall": "매우 작게",
+            "xsmall": "아주 작게",
+            "small": "작게",
+            "medium": "보통",
+            "large": "크게",
+            "xlarge": "아주 크게",
+            "xxlarge": "최대로 크게"
+          },
+          "weights": {
+            "medium": "보통",
+            "semibold": "중간 굵기",
+            "bold": "굵게"
+          },
+          "shadows": {
+            "none": "없음",
+            "soft": "부드럽게",
+            "strong": "강하게"
+          },
+          "backgrounds": {
+            "none": "없음",
+            "softDark": "어두운 박스",
+            "softLight": "밝은 박스"
+          },
+          "lineHeights": {
+            "tight": "좁게",
+            "normal": "보통",
+            "relaxed": "넓게"
+          },
+          "colors": {
+            "light": "밝게",
+            "warm": "웜톤",
+            "dark": "짙게",
+            "cream": "크림",
+            "blush": "블러시 핑크",
+            "sage": "세이지",
+            "sky": "스카이"
+          },
+          "filters": {
+            "none": "기본",
+            "softWarm": "소프트 웜",
+            "moodyNight": "무디 나이트",
+            "fogCalm": "포그 캄",
+            "natureFresh": "네이처 프레시",
+            "travelFilm": "트래블 필름",
+            "dawnBlue": "새벽 블루",
+            "vintageCream": "빈티지 크림",
+            "roseMood": "로즈 무드",
+            "sunsetOrange": "선셋 오렌지"
+          }
+        }
+      },
+      "commerce": {
+        "sectionTitle": "이 이미지로 판매하기",
+        "salesMessage": "이걸 판매용 콘텐츠로 만들 수 있습니다",
+        "salesDescription": "지금 보이는 감성과 문구를 바탕으로 상품명과 설명을 바로 만들어 판매 연결까지 이어갈 수 있습니다.",
+        "generateButton": "판매용 상품 정보 만들기",
+        "copyButton": "상품 정보 복사",
+        "generatedBadge": "판매용 소개가 준비되었습니다",
+        "titleCreate": "상품 제목 생성",
+        "descriptionCreate": "상품 설명 생성",
+        "storePlaceholder": "스마트스토어 연결 예정",
+        "productTitle": "상품명",
+        "oneLineIntro": "한줄 소개",
+        "productDescription": "상품 설명",
+        "usageGuide": "사용 방법",
+        "recommendedFor": "추천 대상",
+        "keywords": "키워드",
+        "empty": "아직 생성된 판매용 콘텐츠가 없습니다."
+      },
+      "states": {
+        "emptyTitle": "mock 분석을 실행해 주세요",
+        "emptyDescription": "이미지를 업로드한 뒤 mock 분석 실행 버튼을 누르면 감성 카테고리, 점수, 문구, 캡션, 해시태그가 아래 분석 결과 영역에 표시됩니다.",
+        "loadingTitle": "분석 결과를 준비하고 있습니다",
+        "loadingDescription": "선택한 이미지를 기준으로 mock 분석 결과를 생성하고 있습니다.",
+        "errorTitle": "분석 결과를 불러오지 못했습니다",
+        "errorDescription": "요청 처리 중 문제가 발생했습니다."
+      }
+    },
+    "feedback": {
+      "success": "업로드가 완료되었습니다.",
+      "analyzeSuccess": "mock 분석이 완료되었습니다.",
+      "copySuccess": "복사가 완료되었습니다.",
+      "applySuccess": "추천 문구가 콘텐츠 세트에 적용되었습니다."
+    },
+    "analysisFeedback": {
+      "contentSetSuccess": "콘텐츠 세트가 완성되었습니다.",
+      "commerceSuccess": "상품 정보가 생성되었습니다."
+    },
+    "analysisErrors": {
+      "contentSetFailed": "콘텐츠 세트 생성 중 문제가 발생했습니다.",
+      "contentSetSaveFailed": "콘텐츠 세트 저장 중 문제가 발생했습니다.",
+      "commerceFailed": "상품 정보 생성 중 문제가 발생했습니다.",
+      "commerceSaveFailed": "상품 정보 저장 중 문제가 발생했습니다."
+    },
+    "errors": {
+      "noFile": "업로드할 이미지를 먼저 선택해 주세요.",
+      "invalidType": "이미지 파일만 업로드할 수 있습니다.",
+      "saveFailed": "업로드 저장 중 문제가 발생했습니다.",
+      "analyzeFailed": "mock 분석 처리 중 문제가 발생했습니다.",
+      "photoNotFound": "분석할 업로드 이미지가 필요합니다.",
+      "unknown": "요청 처리 중 알 수 없는 문제가 발생했습니다."
+    }
+  },
+  "commerceGenerator": {
+    "titleSuffix": "디지털 감성 포스터",
+    "fallbackTitle": "감성 디지털 이미지 세트",
+    "fallbackIntro": "조용히 오래 남는 감정을 담았습니다.",
+    "description": {
+      "lead": "분위기와 감정을 자연스럽게 담아낸 디지털 이미지 콘텐츠입니다.",
+      "support": "함께 활용하면 좋은 메인 문구: ",
+      "tail": "인스타그램 콘텐츠, 디지털 상품 썸네일, 감성 소개 이미지로 자연스럽게 활용할 수 있습니다."
+    },
+    "usage": {
+      "wallpaper": "배경화면, 디지털 포스터, 감성 카드 이미지처럼 오래 머무는 화면에 활용해 보세요.",
+      "social": "인스타그램 피드, 릴스 커버, 저장을 유도하는 감성 카드 콘텐츠에 잘 어울립니다.",
+      "commercial": "스마트스토어 상세페이지, 대표 썸네일, 브랜드 무드 소개 이미지로 연결하기 좋습니다.",
+      "common": "텍스트를 함께 배치하면 감정선이 더 선명하게 전달됩니다."
+    },
+    "recommendedFor": {
+      "wallpaper": "조용한 무드의 디지털 포스터나 배경 이미지를 찾는 분께 잘 맞습니다.",
+      "social": "감정형 콘텐츠로 저장과 공유를 유도하고 싶은 크리에이터에게 추천합니다.",
+      "commercial": "상품 이미지를 감성적으로 보여주고 싶은 셀러나 소규모 브랜드에 잘 어울립니다.",
+      "common": "과하지 않지만 분위기가 분명한 비주얼이 필요한 순간에 특히 활용도가 높습니다."
+    },
+    "keywords": {
+      "baseImage": "감성 이미지",
+      "basePoster": "디지털 포스터",
+      "baseMood": "무드 콘텐츠"
+    }
+  },
+  "analysisPrompt": {
+    "system": [
+      "너는 사진 감성 기반 카피라이터다.",
+      "설명형 문장은 금지하고, 짧고 감정적인 문장만 만든다."
+    ],
+    "sections": {
+      "inputInfo": "[입력 정보]",
+      "phraseRules": "[문구 규칙]",
+      "captionRules": "[캡션 규칙]",
+      "styleExamples": "[스타일 예시]",
+      "captionExamples": "[캡션 완성 예시]",
+      "outputSchema": "[출력 JSON 스키마]"
+    },
+    "labels": {
+      "fileNameHint": "파일명 힌트",
+      "moodCategory": "감성 카테고리",
+      "sceneType": "장면 유형",
+      "emotionGuide": "감정 방향"
+    },
+    "phraseRules": [
+      "출력은 JSON만 반환한다.",
+      "phrases는 정확히 10개 생성한다.",
+      "captions는 정확히 5개 생성한다.",
+      "문구는 설명형 금지.",
+      "문구는 1~2줄, 짧고 강하게.",
+      "감정 중심: 공감, 위로, 생각.",
+      "같은 문장 반복 금지.",
+      "문구에는 반드시 공감형, 자기위로형, 질문형이 섞여야 한다.",
+      "공감형 예시 톤: 같이 걷던 길인데, 이제는 혼자네",
+      "자기위로형 예시 톤: 오늘도 버텨줘서 고마워",
+      "질문형 예시 톤: 왜 이 시간만 되면 생각날까"
+    ],
+    "captionRules": [
+      "captions는 3단 구조를 유지한다.",
+      "1줄: 감정 한 줄",
+      "2줄: 공감 확장",
+      "3줄: 여백 문장",
+      "각 캡션은 총 2~4줄 범위 안에서 끝낸다.",
+      "너무 길거나 시적인 표현은 금지한다.",
+      "감정적이지만 현실적인 톤을 유지한다.",
+      "각 캡션은 저장하고 싶은 밀도를 유지하되 설명처럼 늘어지지 않는다."
+    ],
+    "styleExamples": [
+      "night, loneliness → 같이 걷던 길인데, 이제는 혼자네 / 괜히 더 조용한 밤 / 이 시간만 되면 생각나",
+      "spring, healing → 이제는 조금 괜찮아질 거야 / 봄은 결국 다시 오더라 / 그냥, 오늘이 좋다",
+      "fog, thinking → 어디로 가고 있는 걸까 / 답은 없는데 계속 걷게 된다 / 방향이 없어도 괜찮아",
+      "nature, healing → 오늘은 조금 쉬어가도 된다 / 마음이 먼저 숨을 고른다 / 그 정도면 충분하다",
+      "travel, nostalgia → 다 지난 장면인데 또 마음이 간다 / 그때의 공기가 먼저 떠오른다 / 다시, 그날"
+    ],
+    "captionExamples": [
+      "night caption → 오늘은 괜히 더 조용하다 / 아무 일 없는데도 마음이 무거운 날 있잖아 / 그런 날",
+      "spring caption → 이제는 조금 괜찮아질 것 같다 / 완전히 괜찮진 않아도 예전보다 덜 무너진다 / 그냥, 오늘이 좋다",
+      "fog caption → 요즘은 방향보다 마음이 문제다 / 길을 잃은 게 아니라 마음이 먼저 지쳤는지도 모른다 / 그럴 때가 있다",
+      "nature caption → 오늘은 조금 숨을 고른다 / 계속 달리기보다 잠깐 멈추는 게 더 필요한 날도 있다 / 그 정도면 된다",
+      "travel caption → 다 지난 장면인데 또 떠오른다 / 어디였는지보다 그때의 내가 먼저 생각난다 / 다시, 그날"
+    ],
+    "outputSchema": "{ \"phrases\": [\"...\"], \"captions\": [\"첫 줄\\n둘째 줄\\n셋째 줄\"] }",
+    "emotionGuides": {
+      "night_city": "이별, 고독, 혼자, 늦은 생각",
+      "spring_flower": "설렘, 회복, 다시 시작, 기대",
+      "fog_path": "사색, 방향, 고민, 막막함",
+      "nature_healing": "힐링, 여유, 쉼, 회복",
+      "travel_memory": "기억, 잔상, 그리움, 감성",
+      "default": "공감, 위로, 생각"
+    }
+  },
+  "historyPage": {
+    "shell": {
+      "badge": "History",
+      "title": "이전에 업로드한 사진과 분석 결과를 다시 확인할 수 있습니다"
+    },
+    "homeButton": "홈으로",
+    "list": {
+      "title": "히스토리 목록",
+      "description": "업로드한 사진과 가장 최근 분석 결과를 최신순으로 보여줍니다.",
+      "openDetail": "상세 보기",
+      "delete": "삭제",
+      "deleting": "삭제 중",
+      "deleteConfirm": "이 히스토리 항목을 삭제할까요?",
+      "deleteFailed": "히스토리 삭제 중 문제가 발생했습니다.",
+      "noAnalysis": "분석 결과 없음",
+      "photoCreatedAt": "업로드 시각",
+      "analysisCreatedAt": "최근 분석 시각",
+      "sceneType": "장면 유형",
+      "moodCategory": "감성 카테고리"
+    },
+    "states": {
+      "emptyTitle": "아직 저장된 히스토리가 없습니다",
+      "emptyDescription": "사진을 업로드하고 분석을 실행하면 이 화면에서 이전 결과를 다시 볼 수 있습니다.",
+      "errorTitle": "히스토리를 불러오지 못했습니다",
+      "errorDescription": "히스토리 조회 중 문제가 발생했습니다."
+    }
+  },
+  "historyDetailPage": {
+    "shell": {
+      "badge": "History Detail",
+      "title": "저장된 분석 결과를 다시 확인합니다"
+    },
+    "homeButton": "홈으로",
+    "backButton": "히스토리 목록으로",
+    "resultDescription": "저장된 분석 결과를 다시 불러온 화면입니다.",
+    "states": {
+      "notFoundTitle": "대상 항목을 찾을 수 없습니다",
+      "notFoundDescription": "요청한 사진 기록이 존재하지 않거나 제거되었습니다.",
+      "noAnalysisTitle": "이 사진에는 아직 분석 결과가 없습니다",
+      "noAnalysisDescription": "업로드 기록은 있지만 분석 결과가 저장되지 않았습니다.",
+      "errorTitle": "상세 결과를 불러오지 못했습니다",
+      "errorDescription": "상세 조회 중 문제가 발생했습니다."
+    }
+  },
+  "analysisMock": {
+    "scoring": {
+      "keywords": {
+        "emotion": ["마음", "아프", "외롭", "지치", "생각", "그립", "설렘", "회복", "괜찮", "혼자", "위로", "기억", "방향", "쉬"],
+        "empathy": ["나", "너", "우리", "오늘", "하루", "같이", "혼자", "괜찮은 척", "버티"]
+      },
+      "reasons": {
+        "emotion": "감정 전달력이 강함",
+        "empathy": "공감 포인트가 선명함",
+        "concise": "짧고 강하게 읽힘",
+        "fresh": "반복감이 적음",
+        "repetitive": "표현 반복"
+      }
+    },
+    "presets": [
+      {
+        "file_hints": ["night", "city", "moon", "evening", "midnight"],
+        "scene_type": "night_city",
+        "mood_category": "night_solitude",
+        "short_review": "밤의 공기가 길게 남아, 끝난 마음을 다시 건드리는 장면입니다.",
+        "long_review": "빛보다 어둠이 더 오래 남는 사진입니다. 이별 뒤의 고요, 혼자 남은 생각, 쉽게 잠들지 못하는 마음처럼 현실적인 감정을 짧고 강하게 꺼내기 좋은 흐름을 가지고 있습니다.",
+        "recommended_text_position": "top_center",
+        "wallpaper_score": 83,
+        "social_score": 91,
+        "commercial_score": 62,
+        "phrase_sets": {
+          "empathy": [
+            "끝난 마음은 밤에 더 선명해진다",
+            "혼자인 척해도 밤은 다 안다",
+            "아무렇지 않은 얼굴이 제일 아프다",
+            "괜찮은 척한 하루가 제일 길었다",
+            "잊었다고 말할수록 더 또렷해진다",
+            "오늘도 결국 너 없는 쪽으로 눕는다"
+          ],
+          "comfort": [
+            "지친 마음은 오늘만 천천히 가도 된다",
+            "무너진 날에도 밤은 조용히 지나간다",
+            "버티는 것만으로도 충분한 날이 있다",
+            "대답 없는 밤이라도 너까지 틀린 건 아니다",
+            "아픈 마음은 숨기지 않아도 된다"
+          ],
+          "question": [
+            "너도 이런 밤에 누구를 떠올리니",
+            "왜 잊은 척할수록 더 생각날까",
+            "괜찮아졌다면 왜 아직도 밤이 길까",
+            "혼자 있는 시간이 왜 더 시끄러울까",
+            "다 지난 일인데 왜 아직 아플까"
+          ]
+        },
+        "phrase_patterns": {
+          "empathy": {
+            "starts": ["같이 걷던 길인데, ", "괜히 더 ", "다 지난 줄 알았는데도 ", "혼자인 밤엔 자꾸 "],
+            "ends": ["이제는 혼자네", "조용한 밤", "마음이 먼저 무너진다", "네가 생각나"]
+          },
+          "comfort": {
+            "starts": ["오늘도 ", "무너진 날에도 ", "지친 마음은 "],
+            "ends": ["버텨줘서 고마워", "천천히 지나간다", "조금 늦어도 된다"]
+          },
+          "question": {
+            "starts": ["왜 이 시간만 되면 ", "괜찮아졌다면서 왜 ", "다 지난 일인데 왜 "],
+            "ends": ["생각날까", "밤이 더 길까", "아직도 아플까"]
+          }
+        },
+        "caption_sets": {
+          "emotion": [
+            "오늘은 괜히 더 조용하다",
+            "아무렇지 않은 척이 어렵다",
+            "끝난 일인데 또 생각난다",
+            "혼자 있는 밤이 더 길다",
+            "괜찮은 척도 이제 지친다"
+          ],
+          "expansion": [
+            "아무 일 없는데도 마음이 무거운 날 있잖아",
+            "잊은 줄 알았는데 밤만 되면 다시 올라온다",
+            "버티고만 있었지, 나아진 건 아니었나 보다",
+            "말 안 한 감정일수록 더 오래 남는다",
+            "다 지난 줄 알았는데 아직 거기 서 있다"
+          ],
+          "pause": [
+            "그런 날",
+            "오늘 밤은 그렇다",
+            "괜히 더 그렇다",
+            "말은 못 하겠고",
+            "그냥, 그런 밤"
+          ]
+        },
+        "hashtags": [
+          "#밤감성",
+          "#이별문구",
+          "#고독한밤",
+          "#혼자있는시간",
+          "#공감문장",
+          "#감정기록",
+          "#현실감정",
+          "#저장하고싶은글",
+          "#늦은밤캡션",
+          "#마음문장"
+        ]
+      },
+      {
+        "file_hints": ["spring", "flower", "blossom", "bloom", "petal"],
+        "scene_type": "spring_flower",
+        "mood_category": "spring_recovery",
+        "short_review": "설렘과 회복이 함께 올라오는, 다시 시작하고 싶게 만드는 장면입니다.",
+        "long_review": "가볍게 들뜨는 분위기 안에 회복의 감정이 같이 있습니다. 다시 믿어보고 싶은 마음, 조금은 나아질 것 같은 기대, 상처 이후의 작은 설렘을 꺼내기 좋은 톤입니다.",
+        "recommended_text_position": "bottom_left",
+        "wallpaper_score": 88,
+        "social_score": 90,
+        "commercial_score": 67,
+        "phrase_sets": {
+          "empathy": [
+            "다시 웃고 싶은 마음이 먼저 핀다",
+            "무너진 계절 뒤에도 설렘은 온다",
+            "아픈 날을 지나도 마음은 다시 핀다",
+            "괜찮아질 사람은 결국 다시 빛난다",
+            "다 지난 줄 알았던 마음이 다시 살아난다",
+            "회복은 조용히 와도 분명히 남는다"
+          ],
+          "comfort": [
+            "지친 마음도 봄 앞에서는 조금 풀린다",
+            "늦게 피어도 너의 속도면 충분하다",
+            "오늘의 너도 다시 좋아질 준비를 하고 있다",
+            "한 번 꺾였다고 끝난 계절은 아니다",
+            "천천히 나아지는 사람에게 가장 어울리는 온도"
+          ],
+          "question": [
+            "너도 다시 시작해 보고 싶은 마음이 있니",
+            "요즘 네 마음에도 봄이 들어오고 있니",
+            "다시 믿어보고 싶은 사람이 생겼니",
+            "조금은 나아질 거라고 생각해 본 적 있니",
+            "상처 뒤에도 설렘이 올 수 있을까"
+          ]
+        },
+        "phrase_patterns": {
+          "empathy": {
+            "starts": ["이제는 ", "무너진 계절 뒤에도 ", "다 지난 줄 알았는데 "],
+            "ends": ["조금 괜찮아질 거야", "설렘은 다시 오더라", "마음이 먼저 핀다"]
+          },
+          "comfort": {
+            "starts": ["오늘의 너도 ", "늦게 피어도 ", "봄은 결국 "],
+            "ends": ["충분히 잘하고 있다", "너의 속도면 된다", "다시 오더라"]
+          },
+          "question": {
+            "starts": ["너도 요즘 ", "조금은 다시 ", "상처 뒤에도 "],
+            "ends": ["좋아지고 있니", "기대해 보고 있니", "설렘이 올까"]
+          }
+        },
+        "caption_sets": {
+          "emotion": [
+            "이제는 조금 괜찮아질 것 같다",
+            "다시 기대해 보고 싶다",
+            "마음이 먼저 풀린다",
+            "설렘이 다시 온다",
+            "오늘은 좀 덜 아프다"
+          ],
+          "expansion": [
+            "완전히 괜찮진 않아도 예전보다 덜 무너진다",
+            "다시 믿고 싶은 마음이 조금 생겼다",
+            "좋아진다는 말보다 오늘의 내가 더 믿긴다",
+            "무심한 장면에도 마음이 먼저 반응한다",
+            "아직은 조심스럽지만 분명 달라지고 있다"
+          ],
+          "pause": [
+            "그래서 좋다",
+            "오늘은 믿고 싶다",
+            "봄은 오니까",
+            "그 정도면 됐다",
+            "그냥, 오늘이 좋다"
+          ]
+        },
+        "hashtags": [
+          "#봄감성",
+          "#설렘문구",
+          "#회복기록",
+          "#다시시작",
+          "#공감캡션",
+          "#마음회복",
+          "#감정문장",
+          "#저장하고싶은글",
+          "#봄문장",
+          "#잔잔한설렘"
+        ]
+      },
+      {
+        "file_hints": ["fog", "mist", "cloud", "haze"],
+        "scene_type": "fog_path",
+        "mood_category": "reflective_fog",
+        "short_review": "선명하지 않아서 더 오래 생각하게 만드는 사색의 장면입니다.",
+        "long_review": "앞이 또렷하지 않은 대신 감정의 결이 먼저 보이는 사진입니다. 방향을 잃은 순간, 답을 모르겠는 마음, 멈춰 서서 다시 생각해 보게 되는 고민형 문구에 잘 맞습니다.",
+        "recommended_text_position": "right_center",
+        "wallpaper_score": 79,
+        "social_score": 84,
+        "commercial_score": 58,
+        "phrase_sets": {
+          "empathy": [
+            "요즘 나는 방향보다 마음이 더 흐리다",
+            "잘 가고 있는지 몰라서 더 지치는 날",
+            "답이 없을수록 생각만 깊어진다",
+            "멈춘 것 같은데 마음만 더 바빠진다",
+            "안개 낀 하루에는 고민도 더 짙어진다",
+            "길보다 마음부터 잃어버린 기분"
+          ],
+          "comfort": [
+            "흐린 날에도 너의 속도는 충분하다",
+            "지금 모른다고 해서 틀린 건 아니다",
+            "방향이 늦어져도 인생이 늦는 건 아니다",
+            "답을 찾지 못한 날에도 하루는 지나간다",
+            "천천히 생각해도 되는 날이 있다"
+          ],
+          "question": [
+            "지금 네가 잃은 건 길일까 마음일까",
+            "잘 모르겠는 마음도 지나가긴 할까",
+            "앞이 안 보여도 계속 가야 할까",
+            "멈춰 있는 지금도 과정일까",
+            "답이 없을 때 너는 무엇을 붙잡니"
+          ]
+        },
+        "phrase_patterns": {
+          "empathy": {
+            "starts": ["어디로 가고 있는 걸까, ", "답은 없는데도 ", "요즘은 자꾸 "],
+            "ends": ["마음만 더 멀어진다", "계속 걷게 된다", "방향을 묻게 된다"]
+          },
+          "comfort": {
+            "starts": ["방향이 없어도 ", "지금 모른다고 ", "흐린 날에도 "],
+            "ends": ["괜찮아", "틀린 건 아니다", "너의 속도는 충분하다"]
+          },
+          "question": {
+            "starts": ["앞이 안 보여도 ", "멈춰 있는 지금도 ", "답이 없을 때마다 "],
+            "ends": ["계속 가야 할까", "과정일까", "왜 더 흔들릴까"]
+          }
+        },
+        "caption_sets": {
+          "emotion": [
+            "앞이 흐리면 마음도 흔들린다",
+            "답이 없는 날은 더 길다",
+            "요즘은 방향보다 마음이 문제다",
+            "멈춘 하루가 더 피곤하다",
+            "선명하지 않아서 더 복잡하다"
+          ],
+          "expansion": [
+            "어디로 가는지보다 왜 이렇게 흔들리는지가 더 어렵다",
+            "답이 없어서가 아니라 혼자 버티는 게 더 힘들다",
+            "괜찮은 척하다가 결국 멈추게 되는 날이 있다",
+            "길을 잃은 게 아니라 마음이 먼저 지쳤는지도 모른다",
+            "잘하고 싶을수록 확신 없는 하루가 더 무겁다"
+          ],
+          "pause": [
+            "그래도 걷는다",
+            "일단은 여기까지",
+            "방향은 나중에",
+            "오늘은 이 정도",
+            "그럴 때가 있다"
+          ]
+        },
+        "hashtags": [
+          "#안개감성",
+          "#사색문구",
+          "#방향에대하여",
+          "#고민기록",
+          "#공감문장",
+          "#생각정리",
+          "#막막한마음",
+          "#질문형문구",
+          "#감정메모",
+          "#저장하고싶은글"
+        ]
+      },
+      {
+        "file_hints": ["forest", "nature", "tree", "mountain", "river", "leaf"],
+        "scene_type": "nature_healing",
+        "mood_category": "healing_breath",
+        "short_review": "복잡한 마음을 천천히 눕히는 힐링과 여유의 장면입니다.",
+        "long_review": "자연의 결이 강하지 않게 들어와서 쉼과 회복을 말하기 좋습니다. 지친 사람에게 건네는 위로, 잠시 멈추고 숨을 고르게 만드는 문장, 저장해 두고 꺼내보기 좋은 힐링형 표현과 잘 맞습니다.",
+        "recommended_text_position": "left_center",
+        "wallpaper_score": 92,
+        "social_score": 87,
+        "commercial_score": 66,
+        "phrase_sets": {
+          "empathy": [
+            "지친 마음은 쉬는 법부터 다시 배운다",
+            "요즘은 버티는 것도 꽤 큰 일이다",
+            "잘하고 싶어서 더 지친 날이 많았다",
+            "아무 일 없어 보여도 마음은 자주 소모된다",
+            "괜찮아 보이는 사람도 쉬고 싶다",
+            "조용한 풍경 앞에서야 피곤함이 보인다"
+          ],
+          "comfort": [
+            "오늘은 잠깐 멈춰도 충분하다",
+            "네가 느린 게 아니라 많이 지쳤던 거다",
+            "회복은 쉬는 사람에게 먼저 온다",
+            "숨부터 고르면 생각도 따라온다",
+            "조금 쉬어도 너의 하루는 무너지지 않는다"
+          ],
+          "question": [
+            "너는 마지막으로 마음을 쉬게 한 게 언제였니",
+            "지금 필요한 건 해결일까 휴식일까",
+            "계속 버티는 게 정말 답일까",
+            "쉬지 못한 마음이 먼저 무너지진 않았니",
+            "오늘만큼은 너를 먼저 챙겨도 되지 않을까"
+          ]
+        },
+        "phrase_patterns": {
+          "empathy": {
+            "starts": ["조용한 풍경 앞에서야 ", "아무 일 없어 보여도 ", "요즘은 자꾸 "],
+            "ends": ["피곤함이 보인다", "마음은 먼저 지친다", "숨부터 고르게 된다"]
+          },
+          "comfort": {
+            "starts": ["오늘은 ", "조금 쉬어도 ", "회복은 "],
+            "ends": ["잠깐 멈춰도 된다", "아무것도 늦지 않는다", "쉬는 사람에게 먼저 온다"]
+          },
+          "question": {
+            "starts": ["지금 필요한 건 ", "너는 마지막으로 ", "계속 버티는 게 "],
+            "ends": ["휴식일까", "마음을 쉰 게 언제였니", "정말 답일까"]
+          }
+        },
+        "caption_sets": {
+          "emotion": [
+            "오늘은 조금 쉬고 싶다",
+            "마음이 먼저 숨을 고른다",
+            "지친 날엔 조용한 게 좋다",
+            "작은 쉼이 더 필요하다",
+            "말 없이도 위로가 된다"
+          ],
+          "expansion": [
+            "계속 달리기보다 잠깐 멈추는 게 더 필요한 날이 있다",
+            "아무것도 해결되지 않았는데 마음은 조금 나아진다",
+            "지친 마음은 조언보다 쉬는 틈에 더 반응한다",
+            "괜찮아지려면 먼저 쉬어야 할 때가 있다",
+            "오래 버틴 사람일수록 조용한 장면에 더 기대게 된다"
+          ],
+          "pause": [
+            "잠깐 쉬자",
+            "오늘은 그래도 된다",
+            "그 정도면 충분하다",
+            "숨부터 쉬고",
+            "조금만 천천히"
+          ]
+        },
+        "hashtags": [
+          "#자연감성",
+          "#힐링문구",
+          "#쉼의기록",
+          "#지친마음",
+          "#위로문장",
+          "#여유한줄",
+          "#감정쉼표",
+          "#저장하고싶은글",
+          "#마음회복",
+          "#조용한위로"
+        ]
+      },
+      {
+        "file_hints": ["travel", "trip", "journey", "road", "beach", "flight"],
+        "scene_type": "travel_memory",
+        "mood_category": "nostalgic_trip",
+        "short_review": "지나간 순간을 오래 붙잡고 싶게 만드는 여행 감성의 장면입니다.",
+        "long_review": "풍경 자체보다 그때의 감정이 먼저 떠오르는 사진입니다. 다녀온 시간의 잔상, 오래 남는 기억, 다시는 똑같지 않을 순간을 붙잡는 문장에 잘 어울립니다.",
+        "recommended_text_position": "bottom_center",
+        "wallpaper_score": 85,
+        "social_score": 93,
+        "commercial_score": 71,
+        "phrase_sets": {
+          "empathy": [
+            "지나간 순간은 왜 꼭 나중에 더 예쁠까",
+            "그때의 공기는 아직도 마음에 남아 있다",
+            "다녀온 장소보다 남은 감정이 더 크다",
+            "사진보다 기억이 더 선명한 날이 있다",
+            "끝난 여행은 자꾸만 마음을 되돌린다",
+            "이미 지나간 순간이라 더 오래 붙잡고 싶다"
+          ],
+          "comfort": [
+            "좋았던 기억은 지친 날을 다시 살린다",
+            "다시 돌아갈 수 없어도 떠올릴 수는 있다",
+            "한 번 행복했던 순간은 오래 버티게 해준다",
+            "추억은 생각보다 현실적인 위로가 된다",
+            "지나간 시간이 지금의 나를 조금 살린다"
+          ],
+          "question": [
+            "너에게도 자꾸 떠오르는 여행이 있니",
+            "지금 가장 다시 가고 싶은 순간은 어디니",
+            "우리는 왜 지나간 장면을 더 오래 사랑할까",
+            "다시 갈 수 없다면 더 선명해지는 걸까",
+            "기억 하나가 하루를 버티게 한 적 있니"
+          ]
+        },
+        "phrase_patterns": {
+          "empathy": {
+            "starts": ["같은 장면인데도 ", "다녀온 장소보다 ", "끝난 여행은 "],
+            "ends": ["그때의 마음이 먼저 남는다", "남은 감정이 더 크다", "자꾸만 다시 떠오른다"]
+          },
+          "comfort": {
+            "starts": ["좋았던 기억은 ", "다시 돌아갈 수 없어도 ", "지나간 시간은 "],
+            "ends": ["지친 날을 다시 살린다", "떠올릴 수는 있다", "오늘의 나를 조금 살린다"]
+          },
+          "question": {
+            "starts": ["너에게도 ", "우리는 왜 ", "지금 가장 다시 가고 싶은 "],
+            "ends": ["자꾸 떠오르는 여행이 있니", "지나간 장면을 더 오래 사랑할까", "순간은 어디니"]
+          }
+        },
+        "caption_sets": {
+          "emotion": [
+            "지나간 장면이 더 오래 남는다",
+            "그날의 공기가 다시 떠오른다",
+            "끝난 여행이 더 선명하다",
+            "돌아갈 수 없어서 더 생각난다",
+            "좋았던 순간이 더 크게 남는다"
+          ],
+          "expansion": [
+            "어디였는지보다 그때의 내가 더 오래 남는다",
+            "다시 갈 수 없다는 걸 알아서 더 자주 떠오른다",
+            "지친 날이면 그때의 공기가 먼저 생각난다",
+            "계획보다 우연히 좋았던 순간이 더 오래 남는다",
+            "지나간 장면인데도 오늘의 마음을 다시 건드린다"
+          ],
+          "pause": [
+            "그때가 좋았다",
+            "그래서 남는다",
+            "문득 생각난다",
+            "다시, 그때",
+            "그런 기억"
+          ]
+        },
+        "hashtags": [
+          "#여행감성",
+          "#기억문구",
+          "#감정여행",
+          "#추억기록",
+          "#공감캡션",
+          "#감성사진글귀",
+          "#저장하고싶은글",
+          "#여행문장",
+          "#마음기록",
+          "#다시떠오르는장면"
+        ]
+      }
+    ]
+  }
+}
