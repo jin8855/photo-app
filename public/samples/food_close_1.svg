@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Food close sample">
+  <rect width="640" height="480" fill="#f6ead9"/>
+  <circle cx="320" cy="240" r="154" fill="#fbf6ee"/>
+  <circle cx="292" cy="234" r="84" fill="#d58149"/>
+  <circle cx="370" cy="260" r="48" fill="#87a060"/>
+  <path d="M248 174 C324 210 386 208 430 170" stroke="#7a4a32" stroke-width="14" fill="none" opacity="0.48"/>
+</svg>

@@ -14,6 +14,7 @@ import {
   buildHistoryDetailByPhotoIdQuery,
   buildHistoryListQuery,
 } from "@/repositories/mssql/queries/history-queries";
+import { resolveStoredPhotoPreviewUrl } from "@/services/storage/photo-preview-url";
 
 type HistoryListRow = {
   photoId: number;
@@ -44,6 +45,7 @@ type HistoryDetailAnalysis = {
   photoId: number;
   sceneType: string;
   moodCategory: string;
+  photoStyleType: string;
   shortReview: string;
   longReview: string;
   recommendedTextPosition: string;
@@ -75,7 +77,7 @@ function mapPhoto(photo: HistoryDetailPhoto): UploadedPhotoRecord {
     originalName: photo.originalName,
     filePath: photo.filePath,
     createdAt: photo.createdAt,
-    previewUrl: photo.filePath,
+    previewUrl: resolveStoredPhotoPreviewUrl(photo.filePath),
   };
 }
 
@@ -85,6 +87,7 @@ function mapAnalysis(analysis: HistoryDetailAnalysis): PhotoAnalysisResult {
     photoId: analysis.photoId,
     scene_type: analysis.sceneType,
     mood_category: analysis.moodCategory,
+    photo_style_type: analysis.photoStyleType as PhotoAnalysisResult["photo_style_type"],
     short_review: analysis.shortReview,
     long_review: analysis.longReview,
     recommended_text_position: analysis.recommendedTextPosition,
@@ -106,7 +109,10 @@ export class MssqlHistoryRepository implements HistoryRepository {
   async list(): Promise<HistoryListItem[]> {
     const output = this.queryRunner.run(buildHistoryListQuery());
 
-    return parseJson<HistoryListRow[]>(output) ?? [];
+    return (parseJson<HistoryListRow[]>(output) ?? []).map((item) => ({
+      ...item,
+      previewUrl: resolveStoredPhotoPreviewUrl(item.filePath),
+    }));
   }
 
   async findDetailByPhotoId(photoId: number): Promise<HistoryDetail | null> {

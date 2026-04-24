@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
 import { AnalysisResultPanel } from "@/features/upload/components/analysis-result-panel";
 import type { AnalysisMessages } from "@/features/upload/i18n/upload-page-messages";
@@ -22,7 +22,10 @@ import {
   renameOverlayPreset,
   saveOverlayPreset,
 } from "@/services/content/content-preset-storage";
+import { buildPreviewLayout } from "@/services/content/content-image-renderer";
+import { DEFAULT_FOCUS_AREA } from "@/services/content/content-render-config";
 import { generateInstagramContentSet } from "@/services/content/content-client";
+import type { UserDeviceType } from "@/services/user-context/device-type-preference";
 
 const overlayPresets = {
   emotional_card: {
@@ -38,6 +41,7 @@ const overlayPresets = {
     shadow: "soft",
     background: "soft_dark",
     lineHeight: "normal",
+    cameraStyle: "classic",
   },
   bright_intro: {
     position: "top_center",
@@ -52,6 +56,7 @@ const overlayPresets = {
     shadow: "none",
     background: "soft_light",
     lineHeight: "relaxed",
+    cameraStyle: "natural",
   },
   deep_focus: {
     position: "center",
@@ -66,6 +71,7 @@ const overlayPresets = {
     shadow: "strong",
     background: "none",
     lineHeight: "tight",
+    cameraStyle: "classic",
   },
   dawn_blue: {
     position: "top_right",
@@ -80,6 +86,7 @@ const overlayPresets = {
     shadow: "soft",
     background: "none",
     lineHeight: "relaxed",
+    cameraStyle: "crisp",
   },
   vintage_cream: {
     position: "bottom_center",
@@ -94,6 +101,7 @@ const overlayPresets = {
     shadow: "none",
     background: "soft_light",
     lineHeight: "normal",
+    cameraStyle: "warmPortrait",
   },
   sunset_glow: {
     position: "center",
@@ -108,6 +116,7 @@ const overlayPresets = {
     shadow: "strong",
     background: "soft_dark",
     lineHeight: "tight",
+    cameraStyle: "crisp",
   },
 } satisfies Record<string, ContentOverlayStyle>;
 
@@ -124,6 +133,15 @@ const defaultOverlayStyle: ContentOverlayStyle = {
   shadow: "soft",
   background: "none",
   lineHeight: "normal",
+  cameraStyle: "none",
+  imageFitMode: "original",
+  frameStyle: "none",
+  frameText: "",
+  frameTextColor: "white",
+  dateStampEnabled: false,
+  dateStampValue: "",
+  filmNumberEnabled: false,
+  filmNumberValue: "FRAME 01",
 };
 
 type AnalysisResultViewerProps = {
@@ -131,6 +149,9 @@ type AnalysisResultViewerProps = {
   analysis: PhotoAnalysisResult;
   initialContentSetPayload?: GeneratedContentSetPayload | null;
   initialCommerceContent?: GeneratedCommerceContent | null;
+  deviceType?: UserDeviceType | null;
+  activeStep?: "analyze" | "edit" | "finalize";
+  onStepChange?: (step: "analyze" | "edit" | "finalize") => void;
   onFeedback?: (message: string) => void;
   messages: AnalysisMessages;
 };
@@ -154,6 +175,9 @@ export function AnalysisResultViewer({
   analysis,
   initialContentSetPayload = null,
   initialCommerceContent = null,
+  deviceType = null,
+  activeStep = "analyze",
+  onStepChange,
   onFeedback,
   messages,
 }: AnalysisResultViewerProps) {
@@ -175,9 +199,15 @@ export function AnalysisResultViewer({
   const [savedPresets, setSavedPresets] = useState<SavedOverlayPreset[]>([]);
   const [editingPresetId, setEditingPresetId] = useState<string | null>(null);
   const [editingPresetName, setEditingPresetName] = useState("");
+  const [savedCompletePreviewState, setSavedCompletePreviewState] = useState<ReturnType<
+    typeof buildPreviewLayout
+  > | null>(null);
+  const [savedCompleteOverlayStyle, setSavedCompleteOverlayStyle] = useState<ContentOverlayStyle | null>(null);
+  const [savedCompleteOverlayText, setSavedCompleteOverlayText] = useState<string | null>(null);
+  const [savedCompleteCaptionText, setSavedCompleteCaptionText] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
-  const hashtagBundle = useMemo(() => analysis.hashtags.join(" "), [analysis.hashtags]);
+  const hashtagBundle = analysis.hashtags.join(" ");
 
   const getContentSetErrorMessage = (errorCode: string) => {
     if (errorCode === "contentSetSaveFailed") {
@@ -387,8 +417,11 @@ export function AnalysisResultViewer({
   }, [contentSet]);
 
   useEffect(() => {
-    setSelectedOverlayText(analysis.phrases[0]?.phrase ?? analysis.short_review);
-    setSelectedCaptionText(analysis.captions[0]?.caption ?? "");
+    const nextOverlayText = analysis.phrases[0]?.phrase ?? analysis.short_review;
+    const nextCaptionText = analysis.captions[0]?.caption ?? "";
+
+    setSelectedOverlayText(nextOverlayText);
+    setSelectedCaptionText(nextCaptionText);
     setOverlayStyle(defaultOverlayStyle);
     setContentVariant(0);
     setContentSet((current) => {
@@ -399,15 +432,40 @@ export function AnalysisResultViewer({
       return initialContentSetPayload ? hydrateGeneratedContentSet(initialContentSetPayload) : null;
     });
     setCommerceContent(initialCommerceContent);
+    setSavedCompletePreviewState(null);
+    setSavedCompleteOverlayStyle(null);
+    setSavedCompleteOverlayText(null);
+    setSavedCompleteCaptionText(null);
   }, [analysis, initialContentSetPayload, initialCommerceContent]);
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      void generateContentSet(false);
-    }, 180);
+  const previewRenderState = buildPreviewLayout({
+    imageUrl: uploaded.previewUrl,
+    captionText: selectedOverlayText,
+    outputRatio: overlayStyle.imageFitMode === "original" ? undefined : overlayStyle.aspectRatio,
+    frameStyle: overlayStyle.frameStyle ?? "none",
+    imageFitMode: overlayStyle.imageFitMode ?? "original",
+    focusStyle: overlayStyle.focusStyle ?? "none",
+    focusArea: overlayStyle.focusArea ?? DEFAULT_FOCUS_AREA,
+    frameTextColor: overlayStyle.frameTextColor ?? "white",
+  });
 
-    return () => window.clearTimeout(timeout);
-  }, [selectedOverlayText, selectedCaptionText, hashtagBundle, overlayStyle, uploaded.previewUrl]);
+  const handleSaveEditPreview = () => {
+    setSavedCompletePreviewState(previewRenderState);
+    setSavedCompleteOverlayStyle(overlayStyle);
+    setSavedCompleteOverlayText(selectedOverlayText);
+    setSavedCompleteCaptionText(selectedCaptionText);
+    onFeedback?.(messages.applySuccess);
+  };
+
+  const handleChangeOverlayStyle = (nextStyle: ContentOverlayStyle) => {
+    if (nextStyle.imageFitMode === "original") {
+      const { aspectRatio: _unusedAspectRatio, ...restStyle } = nextStyle;
+      setOverlayStyle(restStyle);
+      return;
+    }
+
+    setOverlayStyle(nextStyle);
+  };
 
   return (
     <AnalysisResultPanel
@@ -418,13 +476,20 @@ export function AnalysisResultViewer({
       onGenerateContentSet={handleGenerateContentSet}
       isGeneratingContentSet={isGeneratingContentSet}
       contentSet={contentSet}
+      completePreviewContentSet={null}
       commerceContent={commerceContent}
       onGenerateCommerceContent={handleGenerateCommerceContent}
       onCopyCommerceContent={handleCopyCommerceContent}
       onApplyRecommendedPhrase={handleApplyRecommendedPhrase}
       selectedOverlayText={selectedOverlayText}
       selectedCaptionText={selectedCaptionText}
+      previewRenderState={previewRenderState}
+      completePreviewRenderState={savedCompletePreviewState}
+      completePreviewOverlayStyle={savedCompleteOverlayStyle}
+      completePreviewOverlayText={savedCompleteOverlayText}
+      completePreviewCaptionText={savedCompleteCaptionText}
       overlayStyle={overlayStyle}
+      onSaveEditPreview={handleSaveEditPreview}
       onApplyOverlayPreset={handleApplyOverlayPreset}
       presetName={presetName}
       savedPresets={savedPresets}
@@ -444,7 +509,10 @@ export function AnalysisResultViewer({
       onImportOverlayPresets={handleImportOverlayPresets}
       onSelectOverlayText={setSelectedOverlayText}
       onSelectCaptionText={setSelectedCaptionText}
-      onChangeOverlayStyle={setOverlayStyle}
+        onChangeOverlayStyle={handleChangeOverlayStyle}
+      deviceType={deviceType}
+      activeStep={activeStep}
+      onStepChange={onStepChange ?? (() => {})}
       messages={messages}
     />
   );

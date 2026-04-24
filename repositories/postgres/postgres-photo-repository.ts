@@ -1,4 +1,5 @@
 import type { CreatePhotoInput, PhotoRecord } from "@/lib/types/database";
+import { ensurePostgresDatabaseReadyAsync } from "@/db/postgres/postgres-bootstrapper";
 import type { PhotoRepository } from "@/repositories/photo-repository";
 import { mapPostgresPhotoRow } from "@/repositories/postgres/postgres-mappers";
 import { createPostgresQueryClient } from "@/repositories/postgres/postgres-query-client";
@@ -19,6 +20,7 @@ export class PostgresPhotoRepository implements PhotoRepository {
   }
 
   async createPhoto(input: CreatePhotoInput): Promise<PhotoRecord> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresPhotoRow>(
       `
         insert into public.photos (original_name, file_path)
@@ -37,6 +39,7 @@ export class PostgresPhotoRepository implements PhotoRepository {
   }
 
   async getPhoto(id: number): Promise<PhotoRecord | null> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresPhotoRow>(
       `
         select id, original_name, file_path, created_at
@@ -62,6 +65,7 @@ export class PostgresPhotoRepository implements PhotoRepository {
   }
 
   async list(): Promise<PhotoRecord[]> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresPhotoRow>(
       `
         select id, original_name, file_path, created_at
@@ -78,6 +82,7 @@ export class PostgresPhotoRepository implements PhotoRepository {
   }
 
   async delete(id: number): Promise<boolean> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<{ id: number | string }>(
       `
         delete from public.photos

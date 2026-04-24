@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Flower close sample">
+  <rect width="640" height="480" fill="#dfead4"/>
+  <circle cx="320" cy="240" r="54" fill="#d99d44"/>
+  <ellipse cx="320" cy="140" rx="50" ry="92" fill="#f2b5c4"/>
+  <ellipse cx="320" cy="340" rx="50" ry="92" fill="#f2b5c4"/>
+  <ellipse cx="220" cy="240" rx="92" ry="50" fill="#f2b5c4"/>
+  <ellipse cx="420" cy="240" rx="92" ry="50" fill="#f2b5c4"/>
+</svg>

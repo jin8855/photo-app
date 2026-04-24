@@ -9,6 +9,7 @@ import type { UploadedPhotoRecord } from "@/lib/types/database";
 import type { HistoryDetail, HistoryListItem } from "@/lib/types/history";
 import type { HistoryRepository } from "@/repositories/history-repository";
 import { mapAnalysisRow, mapPhotoRow } from "@/repositories/local/sqlite-mappers";
+import { resolveStoredPhotoPreviewUrl } from "@/services/storage/photo-preview-url";
 import type Database from "better-sqlite3";
 
 type HistoryListRow = {
@@ -35,6 +36,7 @@ type AnalysisRow = {
   photo_id: number;
   scene_type: string;
   mood_category: string;
+  photo_style_type: string;
   short_review: string;
   long_review: string;
   recommended_text_position: string;
@@ -56,7 +58,7 @@ function mapHistoryPhoto(row: PhotoRow): UploadedPhotoRecord {
 
   return {
     ...photo,
-    previewUrl: photo.filePath,
+    previewUrl: resolveStoredPhotoPreviewUrl(photo.filePath),
   };
 }
 
@@ -68,6 +70,7 @@ function mapHistoryAnalysis(row: AnalysisRow): PhotoAnalysisResult {
     photoId: analysis.photoId,
     scene_type: analysis.sceneType,
     mood_category: analysis.moodCategory,
+    photo_style_type: analysis.photoStyleType as PhotoAnalysisResult["photo_style_type"],
     short_review: analysis.shortReview,
     long_review: analysis.longReview,
     recommended_text_position: analysis.recommendedTextPosition,
@@ -95,6 +98,7 @@ export class SqliteHistoryRepository implements HistoryRepository {
             a.photo_id,
             a.scene_type,
             a.mood_category,
+            a.photo_style_type,
             a.short_review,
             a.created_at AS analysisCreatedAt,
             ROW_NUMBER() OVER (PARTITION BY a.photo_id ORDER BY a.created_at DESC, a.id DESC) AS rn
@@ -118,7 +122,10 @@ export class SqliteHistoryRepository implements HistoryRepository {
       `,
     );
 
-    return statement.all() as HistoryListItem[];
+    return (statement.all() as HistoryListRow[]).map((item) => ({
+      ...item,
+      previewUrl: resolveStoredPhotoPreviewUrl(item.filePath),
+    }));
   }
 
   async findDetailByPhotoId(photoId: number): Promise<HistoryDetail | null> {
@@ -136,6 +143,7 @@ export class SqliteHistoryRepository implements HistoryRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,

@@ -27,7 +27,7 @@ export function HistoryListItemCard({
 }: HistoryListItemCardProps) {
   return (
     <article style={styles.card}>
-      <img src={item.filePath} alt={item.originalName} style={styles.image} />
+      <img src={item.previewUrl} alt={item.originalName} style={styles.image} />
       <div style={styles.content}>
         <div style={styles.header}>
           <h2 style={styles.title}>{item.originalName}</h2>

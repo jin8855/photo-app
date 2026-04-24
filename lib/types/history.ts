@@ -7,6 +7,7 @@ export type HistoryListItem = {
   photoId: number;
   originalName: string;
   filePath: string;
+  previewUrl: string;
   photoCreatedAt: string;
   latestAnalysisId: number | null;
   sceneType: string | null;

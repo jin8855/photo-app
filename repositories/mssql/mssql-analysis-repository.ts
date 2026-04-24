@@ -15,6 +15,7 @@ type JsonAnalysisRow = {
   photoId: number;
   sceneType: string;
   moodCategory: string;
+  photoStyleType: string;
   shortReview: string;
   longReview: string;
   recommendedTextPosition: string;
@@ -37,6 +38,7 @@ function mapAnalysisRow(row: JsonAnalysisRow): AnalysisRecord {
     photoId: row.photoId,
     sceneType: row.sceneType,
     moodCategory: row.moodCategory,
+    photoStyleType: row.photoStyleType,
     shortReview: row.shortReview,
     longReview: row.longReview,
     recommendedTextPosition: row.recommendedTextPosition,

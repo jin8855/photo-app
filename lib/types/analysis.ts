@@ -12,11 +12,24 @@ export type ScoredCaption = {
 
 export type AnalysisGenerationSource = "mock" | "openai";
 
+export type PhotoStyleType =
+  | "emotional_landscape"
+  | "spring_healing"
+  | "lonely_night"
+  | "reflective_fog"
+  | "travel_korean"
+  | "natural_healing"
+  | "action_speed"
+  | "sports_energy"
+  | "urban_mood"
+  | "other";
+
 export type PhotoAnalysisResult = {
   id: number;
   photoId: number;
   scene_type: string;
   mood_category: string;
+  photo_style_type: PhotoStyleType;
   short_review: string;
   long_review: string;
   recommended_text_position: string;

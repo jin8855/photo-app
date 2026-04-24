@@ -1,6 +1,6 @@
 import type { UploadedPhotoRecord } from "@/lib/types/database";
 import { AppError } from "@/lib/errors/app-error";
-import { logServerWarn } from "@/lib/logging/app-logger";
+import { logServerError, logServerWarn } from "@/lib/logging/app-logger";
 import type { PhotoRepository } from "@/repositories/photo-repository";
 import type { PhotoStorage } from "@/services/storage/photo-storage";
 
@@ -28,6 +28,13 @@ export class PhotoUploadService {
     try {
       storedFile = await this.photoStorage.save(file);
     } catch (error) {
+      logServerError("photo.upload.storageFailed", error, {
+        fileName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        storageProvider: this.photoStorage.constructor.name,
+      });
+
       throw new AppError({
         code: "uploadFailed",
         status: 500,
@@ -52,6 +59,12 @@ export class PhotoUploadService {
         previewUrl: storedFile.previewUrl,
       };
     } catch (error) {
+      logServerError("photo.upload.metadataSaveFailed", error, {
+        fileName: file.name,
+        filePath: storedFile.filePath,
+        storageProvider: this.photoStorage.constructor.name,
+      });
+
       try {
         await this.photoStorage.delete(storedFile.filePath);
       } catch (cleanupError) {

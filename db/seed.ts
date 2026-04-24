@@ -74,6 +74,7 @@ export async function seedDatabase(): Promise<void> {
     photoId: samplePhoto.id,
     sceneType: preset.scene_type,
     moodCategory: preset.mood_category,
+    photoStyleType: "emotional_landscape",
     shortReview: preset.short_review,
     longReview: preset.long_review,
     recommendedTextPosition: preset.recommended_text_position,

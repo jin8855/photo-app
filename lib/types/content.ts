@@ -33,11 +33,14 @@ export type ContentOverlayTextColor =
 
 export type ContentImageFilter =
   | "none"
+  | "black_and_white"
   | "soft_warm"
   | "moody_night"
   | "fog_calm"
   | "nature_fresh"
   | "travel_film"
+  | "film_frame"
+  | "portrait_focus"
   | "dawn_blue"
   | "vintage_cream"
   | "rose_mood"
@@ -48,6 +51,22 @@ export type ContentOverlayShadow = "none" | "soft" | "strong";
 export type ContentOverlayBackground = "none" | "soft_dark" | "soft_light";
 
 export type ContentOverlayLineHeight = "tight" | "normal" | "relaxed";
+
+export type CameraStyle = "none" | "natural" | "warmPortrait" | "crisp" | "classic";
+export type ContentFrameStyle = "none" | "vintageFilmBorder" | "cinemaFilm" | "polaroid" | "minimal";
+export type ContentFrameTextColor = "white" | "black" | "brown" | "cream";
+export type ContentImageFitMode = "original" | "contain" | "cover";
+
+export type ContentFocusStyle = "none" | "center" | "manual";
+export type ContentFocusColorMode = "none" | "color-pop";
+
+export type ContentFocusArea = {
+  centerX: number;
+  centerY: number;
+  radius: number;
+};
+
+export type InstagramOutputAspectRatio = "1:1" | "4:5" | "9:16";
 
 export type ContentOverlayStyle = {
   position: ContentOverlayPosition;
@@ -62,6 +81,19 @@ export type ContentOverlayStyle = {
   shadow: ContentOverlayShadow;
   background: ContentOverlayBackground;
   lineHeight: ContentOverlayLineHeight;
+  cameraStyle: CameraStyle;
+  aspectRatio?: InstagramOutputAspectRatio;
+  imageFitMode?: ContentImageFitMode;
+  focusStyle?: ContentFocusStyle;
+  focusColorMode?: ContentFocusColorMode;
+  focusArea?: ContentFocusArea;
+  frameStyle?: ContentFrameStyle;
+  frameText?: string;
+  frameTextColor?: ContentFrameTextColor;
+  dateStampEnabled?: boolean;
+  dateStampValue?: string;
+  filmNumberEnabled?: boolean;
+  filmNumberValue?: string;
 };
 
 export type GeneratedContentSet = {

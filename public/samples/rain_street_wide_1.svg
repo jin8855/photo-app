@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Rain street wide sample">
+  <rect width="640" height="480" fill="#2f3d42"/>
+  <rect y="286" width="640" height="194" fill="#1f2629"/>
+  <path d="M96 80 L70 278" stroke="#d8d3bb" stroke-width="10"/>
+  <circle cx="96" cy="72" r="36" fill="#f2d47a"/>
+  <ellipse cx="174" cy="384" rx="150" ry="28" fill="#f2d47a" opacity="0.28"/>
+  <path d="M392 64 L372 242 M482 84 L460 270 M552 44 L530 220" stroke="#d7e2e5" stroke-width="4" opacity="0.42"/>
+</svg>

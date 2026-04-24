@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Concert person medium sample">
+  <rect width="640" height="480" fill="#17111d"/>
+  <path d="M96 0 L268 480" stroke="#e35b71" stroke-width="56" opacity="0.35"/>
+  <path d="M534 0 L364 480" stroke="#4cc3d9" stroke-width="56" opacity="0.3"/>
+  <circle cx="320" cy="214" r="56" fill="#f3d0a7"/>
+  <rect x="244" y="278" width="152" height="116" rx="52" fill="#33233f"/>
+</svg>

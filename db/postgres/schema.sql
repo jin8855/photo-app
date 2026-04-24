@@ -10,6 +10,7 @@ create table if not exists public.analyses (
   photo_id bigint not null references public.photos(id) on delete cascade,
   scene_type text not null,
   mood_category text not null,
+  photo_style_type text not null default 'other',
   short_review text not null,
   long_review text not null,
   recommended_text_position text not null,
@@ -25,6 +26,40 @@ create table if not exists public.analyses (
   commerce_content_json jsonb null,
   created_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.photos enable row level security;
+alter table public.analyses enable row level security;
+
+do $$
+declare
+  policy_record record;
+  role_name text;
+begin
+  foreach role_name in array array['anon', 'authenticated']
+  loop
+    if exists (select 1 from pg_roles where rolname = role_name) then
+      execute format('revoke all on table public.photos from %I', role_name);
+      execute format('revoke all on table public.analyses from %I', role_name);
+      execute format('revoke all on sequence public.photos_id_seq from %I', role_name);
+      execute format('revoke all on sequence public.analyses_id_seq from %I', role_name);
+    end if;
+  end loop;
+
+  for policy_record in
+    select schemaname, tablename, policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename in ('photos', 'analyses')
+  loop
+    execute format(
+      'drop policy if exists %I on %I.%I',
+      policy_record.policyname,
+      policy_record.schemaname,
+      policy_record.tablename
+    );
+  end loop;
+end
+$$;
 
 create index if not exists idx_photos_created_at
   on public.photos (created_at desc);

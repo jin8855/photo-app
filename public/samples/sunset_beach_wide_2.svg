@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Sunset beach wide sample 2">
+  <rect width="640" height="480" fill="#f1a15f"/>
+  <rect y="340" width="640" height="140" fill="#31535f"/>
+  <circle cx="174" cy="188" r="66" fill="#ffe2a3"/>
+  <path d="M0 340 L640 340" stroke="#fff1c7" stroke-width="8" opacity="0.5"/>
+</svg>

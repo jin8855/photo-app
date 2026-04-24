@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Sunset beach wide sample 1">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop stop-color="#e98f55"/>
+      <stop offset="0.62" stop-color="#f3c486"/>
+      <stop offset="1" stop-color="#4f6f7b"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#sky)"/>
+  <circle cx="510" cy="154" r="54" fill="#fff0b8" opacity="0.88"/>
+  <rect y="320" width="640" height="160" fill="#315c67"/>
+  <path d="M0 358 C120 330 220 386 360 354 C472 330 560 350 640 332 L640 480 L0 480 Z" fill="#1f4853" opacity="0.78"/>
+</svg>

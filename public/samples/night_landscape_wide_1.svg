@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Night landscape wide sample">
+  <rect width="640" height="480" fill="#111721"/>
+  <rect y="300" width="640" height="180" fill="#0b1017"/>
+  <circle cx="480" cy="96" r="42" fill="#f4e6b5"/>
+  <rect x="96" y="220" width="58" height="118" fill="#202c37"/>
+  <rect x="242" y="182" width="70" height="156" fill="#253441"/>
+  <rect x="412" y="240" width="48" height="98" fill="#202c37"/>
+  <path d="M0 358 C140 322 300 386 640 344" stroke="#f1c96d" stroke-width="9" opacity="0.32"/>
+</svg>

@@ -1,4 +1,55 @@
-import type { ContentOverlayStyle } from "@/lib/types/content";
+import type {
+  ContentFocusArea,
+  ContentFocusStyle,
+  ContentFrameStyle,
+  ContentFrameTextColor,
+  ContentImageFitMode,
+  ContentOverlayStyle,
+  InstagramOutputAspectRatio,
+} from "@/lib/types/content";
+import type { RenderConfig } from "@/services/content/content-render-config";
+import { buildRenderConfig, resolveRenderSvgOverlay } from "@/services/content/content-render-config";
+import { resolveInstagramOutputFormat } from "@/services/content/instagram-output-format";
+
+type RenderSurface = {
+  width: number;
+  height: number;
+};
+
+export type PreviewRenderState = {
+  imageUrl: string;
+  captionText: string;
+  outputRatio?: InstagramOutputAspectRatio;
+  frameStyle: ContentFrameStyle;
+  imageFitMode: ContentImageFitMode;
+  focusStyle: ContentFocusStyle;
+  focusArea: ContentFocusArea;
+  frameTextColor: ContentFrameTextColor;
+};
+
+export type PreviewLayout = {
+  imageUrl: string;
+  captionText: string;
+  ratio?: InstagramOutputAspectRatio;
+  frameStyle: ContentFrameStyle;
+  fit: ContentImageFitMode;
+  focus: ContentFocusStyle;
+  focusArea: ContentFocusArea;
+  frameTextColor: ContentFrameTextColor;
+};
+
+export function buildPreviewLayout(state: PreviewRenderState): PreviewLayout {
+  return {
+    imageUrl: state.imageUrl,
+    captionText: state.captionText,
+    ratio: state.outputRatio,
+    frameStyle: state.frameStyle,
+    fit: state.imageFitMode,
+    focus: state.focusStyle,
+    focusArea: state.focusArea,
+    frameTextColor: state.frameTextColor,
+  };
+}
 
 function escapeXml(value: string): string {
   return value
@@ -47,8 +98,14 @@ function inputSafeOffset(_position: ContentOverlayStyle["position"], value: numb
   return Number.isFinite(value) ? value : 0;
 }
 
-function resolveOverlayPosition(position: ContentOverlayStyle["position"], lineCount: number) {
-  const gap = 72;
+function resolveOverlayPosition(
+  position: ContentOverlayStyle["position"],
+  lineCount: number,
+  surface: RenderSurface,
+) {
+  const scaleX = surface.width / 1080;
+  const scaleY = surface.height / 1350;
+  const gap = 72 * scaleY;
   const baseYByPosition = {
     top_left: 320,
     top_center: 320,
@@ -60,7 +117,7 @@ function resolveOverlayPosition(position: ContentOverlayStyle["position"], lineC
     bottom_center: 980,
     bottom_right: 980,
   } as const;
-  const baseY = baseYByPosition[position];
+  const baseY = baseYByPosition[position] * scaleY;
   const totalHeight = Math.max(lineCount - 1, 0) * gap;
   const xByPosition = {
     top_left: 88,
@@ -84,7 +141,7 @@ function resolveOverlayPosition(position: ContentOverlayStyle["position"], lineC
     bottom_center: "middle",
     bottom_right: "end",
   } as const;
-  const x = xByPosition[position];
+  const x = xByPosition[position] * scaleX;
   const anchor = anchorByPosition[position];
 
   return {
@@ -220,10 +277,32 @@ function resolveImageFilterOverlay(
     `.trim();
   }
 
+  if (imageFilter === "black_and_white") {
+    return `
+      <rect x="0" y="0" width="1080" height="1350" fill="rgba(19, 16, 13, ${alpha(0.14)})" />
+      <rect x="0" y="0" width="1080" height="1350" fill="rgba(255, 250, 244, ${alpha(0.05)})" />
+    `.trim();
+  }
+
   if (imageFilter === "travel_film") {
     return `
       <rect x="0" y="0" width="1080" height="1350" fill="rgba(165, 118, 76, ${alpha(0.16)})" />
       <rect x="0" y="0" width="1080" height="1350" fill="rgba(46, 31, 22, ${alpha(0.08)})" />
+    `.trim();
+  }
+
+  if (imageFilter === "film_frame") {
+    return `
+      <rect x="0" y="0" width="1080" height="1350" fill="rgba(170, 112, 70, ${alpha(0.14)})" />
+      <rect x="0" y="0" width="1080" height="1350" fill="rgba(255, 235, 196, ${alpha(0.09)})" />
+      <rect x="0" y="0" width="1080" height="1350" fill="rgba(35, 24, 18, ${alpha(0.08)})" />
+    `.trim();
+  }
+
+  if (imageFilter === "portrait_focus") {
+    return `
+      <rect x="0" y="0" width="1080" height="1350" fill="rgba(255, 244, 226, ${alpha(0.05)})" />
+      <rect x="0" y="0" width="1080" height="1350" fill="rgba(19, 16, 13, ${alpha(0.08)})" />
     `.trim();
   }
 
@@ -252,6 +331,233 @@ function resolveImageFilterOverlay(
     return `
       <rect x="0" y="0" width="1080" height="1350" fill="rgba(226, 126, 66, ${alpha(0.18)})" />
       <rect x="0" y="0" width="1080" height="1350" fill="rgba(255, 220, 180, ${alpha(0.10)})" />
+    `.trim();
+  }
+
+  return "";
+}
+
+function resolveImageFilterId(imageFilter: ContentOverlayStyle["imageFilter"]): string {
+  if (imageFilter === "black_and_white") {
+    return "grayscaleImage";
+  }
+
+  if (imageFilter === "film_frame" || imageFilter === "travel_film" || imageFilter === "vintage_cream") {
+    return "filmToneImage";
+  }
+
+  return "";
+}
+
+function scaleFullSurfaceRects(svg: string, surface: RenderSurface): string {
+  return svg.replaceAll(
+    'width="1080" height="1350"',
+    `width="${surface.width}" height="${surface.height}"`,
+  );
+}
+
+function resolveFocusGeometry(renderConfig: RenderConfig, surface: RenderSurface) {
+  const centerX = Math.round(renderConfig.focusArea.centerX * surface.width);
+  const centerY = Math.round(renderConfig.focusArea.centerY * surface.height);
+  const radius = Math.round(renderConfig.focusArea.radius * surface.width);
+
+  return { centerX, centerY, radius };
+}
+
+function renderBaseImage(
+  imageDataUrl: string,
+  imageFilter: ContentOverlayStyle["imageFilter"],
+  renderConfig: RenderConfig,
+  surface: RenderSurface,
+): string {
+  const resolveFramedMatFill = () => {
+    if (renderConfig.frameStyle === "minimal") {
+      return "rgba(255,255,255,0.96)";
+    }
+
+    if (renderConfig.cameraStyle === "crisp" && renderConfig.toneStyle === "none") {
+      return "rgba(255,255,255,0.98)";
+    }
+
+    if (imageFilter === "film_frame" || imageFilter === "travel_film" || imageFilter === "vintage_cream") {
+      return "rgba(241,238,231,0.96)";
+    }
+
+    if (renderConfig.toneStyle === "bw") {
+      return "rgba(241,238,231,0.98)";
+    }
+
+    return "rgba(247,244,238,0.98)";
+  };
+  const filterId = resolveImageFilterId(imageFilter);
+  const filterAttribute = filterId ? ` filter="url(#${filterId})"` : "";
+  const focusBlurPixels = Math.min(3, Math.max(1.8, renderConfig.params.blurBackground * 48));
+  const focusBaseFilter = [
+    filterId ? `url(#${filterId})` : null,
+    `blur(${focusBlurPixels.toFixed(1)}px)`,
+    "brightness(0.85)",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const preserveAspectRatio =
+    renderConfig.imageFitMode === "cover" ? "xMidYMid slice" : "xMidYMid meet";
+  const imageFrame = `x="0" y="0" width="${surface.width}" height="${surface.height}" preserveAspectRatio="${preserveAspectRatio}"`;
+  const framedMatNode =
+    renderConfig.imageFitMode === "cover"
+      ? ""
+      : `<rect x="0" y="0" width="${surface.width}" height="${surface.height}" fill="${resolveFramedMatFill()}" />`;
+  const baseImage = `<image href="${imageDataUrl}" ${imageFrame}${filterAttribute} />`;
+
+  if (renderConfig.focusStyle === "none") {
+    return `${framedMatNode}${baseImage}`.trim();
+  }
+
+  const { centerX, centerY, radius } = resolveFocusGeometry(renderConfig, surface);
+  const focusFilterAttribute =
+    renderConfig.toneStyle === "bw" && renderConfig.focusColorMode === "color-pop"
+      ? ""
+      : filterAttribute;
+
+  return `
+    ${framedMatNode}
+    <image href="${imageDataUrl}" ${imageFrame} style="filter: ${focusBaseFilter}" />
+    <image href="${imageDataUrl}" ${imageFrame}${focusFilterAttribute} clip-path="url(#portraitFocusClip)" />
+    <circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="none" stroke="rgba(255,250,244,0.22)" stroke-width="4" />
+  `.trim();
+}
+
+function renderStyleFrame(imageFilter: ContentOverlayStyle["imageFilter"], surface: RenderSurface): string {
+  if (imageFilter === "film_frame") {
+    const now = new Date();
+    const dateStamp = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(
+      now.getDate(),
+    ).padStart(2, "0")}`;
+
+    const outer = { x: 34, y: 34, width: surface.width - 68, height: surface.height - 68 };
+    const inner = { x: 58, y: 58, width: surface.width - 116, height: surface.height - 116 };
+    const labelY = surface.height - 90;
+
+    return `
+      <rect x="${outer.x}" y="${outer.y}" width="${outer.width}" height="${outer.height}" rx="16" ry="16" fill="none" stroke="rgba(255,245,224,0.86)" stroke-width="24" />
+      <rect x="${inner.x}" y="${inner.y}" width="${inner.width}" height="${inner.height}" rx="12" ry="12" fill="none" stroke="rgba(33,23,18,0.28)" stroke-width="2" />
+      <text x="104" y="${labelY}" fill="rgba(255,245,224,0.92)" font-size="30" font-weight="700" font-family="'Courier New', monospace">${dateStamp}</text>
+      <text x="${surface.width - 170}" y="${labelY}" fill="rgba(255,245,224,0.78)" font-size="24" font-weight="700" font-family="'Courier New', monospace" text-anchor="end">FILM</text>
+    `.trim();
+  }
+
+  if (imageFilter === "black_and_white") {
+    return `<rect x="30" y="30" width="${surface.width - 60}" height="${surface.height - 60}" rx="24" ry="24" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="2" />`;
+  }
+
+  if (imageFilter === "portrait_focus") {
+    return `<rect x="46" y="46" width="${surface.width - 92}" height="${surface.height - 92}" rx="34" ry="34" fill="none" stroke="rgba(255,250,244,0.22)" stroke-width="2" />`;
+  }
+
+  return "";
+}
+
+function renderFrameOverlay(style: ContentOverlayStyle, surface: RenderSurface): string {
+  const frameStyle = style.frameStyle;
+  const frameTextColor = style.frameTextColor ?? "white";
+  const resolveFrameTextFill = (opacity: number) => {
+    if (frameTextColor === "black") {
+      return `rgba(34,28,24,${opacity})`;
+    }
+
+    if (frameTextColor === "brown") {
+      return `rgba(104,74,54,${opacity})`;
+    }
+
+    if (frameTextColor === "cream") {
+      return `rgba(255,246,226,${opacity})`;
+    }
+
+    return `rgba(255,255,255,${opacity})`;
+  };
+  const resolveFrameTextShadow = () =>
+    frameTextColor === "black"
+      ? "rgba(255,255,255,0.32)"
+      : frameTextColor === "brown"
+        ? "rgba(36,22,16,0.28)"
+        : "rgba(0,0,0,0.45)";
+  const dateStampText =
+    style.dateStampEnabled === true
+      ? (style.dateStampValue ?? "").trim() ||
+        `${new Date().getFullYear()}.${String(new Date().getMonth() + 1).padStart(2, "0")}.${String(
+          new Date().getDate(),
+        ).padStart(2, "0")}`
+      : "";
+  const filmNumberText =
+    style.filmNumberEnabled === true ? (style.filmNumberValue ?? "").trim().slice(0, 12) || "FRAME 01" : "";
+  if (frameStyle === "vintageFilmBorder") {
+    const outer = { x: 34, y: 34, width: surface.width - 68, height: surface.height - 68 };
+    const inner = { x: 58, y: 58, width: surface.width - 116, height: surface.height - 116 };
+    const labelY = surface.height - 90;
+
+    return `
+      <rect x="${outer.x}" y="${outer.y}" width="${outer.width}" height="${outer.height}" rx="16" ry="16" fill="none" stroke="rgba(255,245,224,0.86)" stroke-width="24" />
+      <rect x="${inner.x}" y="${inner.y}" width="${inner.width}" height="${inner.height}" rx="12" ry="12" fill="none" stroke="rgba(33,23,18,0.28)" stroke-width="2" />
+      ${dateStampText ? `<text x="104" y="${labelY}" fill="${resolveFrameTextFill(0.92)}" font-size="30" font-weight="700" font-family="'Courier New', monospace">${escapeXml(dateStampText)}</text>` : ""}
+      ${filmNumberText ? `<text x="${surface.width / 2}" y="${labelY}" fill="${resolveFrameTextFill(0.76)}" font-size="21" font-weight="700" font-family="'Courier New', monospace" text-anchor="middle">${escapeXml(filmNumberText)}</text>` : ""}
+      <text x="${surface.width - 170}" y="${labelY}" fill="rgba(255,245,224,0.78)" font-size="24" font-weight="700" font-family="'Courier New', monospace" text-anchor="end">FILM</text>
+    `.trim();
+  }
+
+  if (frameStyle === "polaroid") {
+    const outerInsetX = Math.round(surface.width * 0.024);
+    const outerInsetTop = Math.round(surface.height * 0.024);
+    const outerInsetBottom = Math.round(surface.height * 0.086);
+    const width = surface.width - outerInsetX * 2;
+    const height = surface.height - outerInsetTop - outerInsetBottom;
+    const captionY = surface.height - outerInsetBottom / 2 + 10;
+    const frameText = (style.frameText ?? "").trim().slice(0, 24);
+
+    return `
+      <rect x="${outerInsetX}" y="${outerInsetTop}" width="${width}" height="${height}" rx="16" ry="16" fill="none" stroke="rgba(255,252,247,0.96)" stroke-width="18" />
+      <rect x="${outerInsetX + 12}" y="${outerInsetTop + 12}" width="${width - 24}" height="${height - 24}" rx="10" ry="10" fill="none" stroke="rgba(96,74,58,0.08)" stroke-width="1.5" />
+      ${dateStampText ? `<text x="${surface.width / 2}" y="${captionY - 16}" fill="${resolveFrameTextFill(0.76)}" font-size="18" font-weight="600" font-family="Arial, sans-serif" text-anchor="middle">${escapeXml(dateStampText)}</text>` : ""}
+      ${frameText
+        ? `<text x="${surface.width / 2}" y="${captionY + 16}" fill="${resolveFrameTextFill(0.86)}" font-size="24" font-weight="700" font-family="Arial, sans-serif" text-anchor="middle">${escapeXml(frameText)}</text>`
+        : ""}
+    `.trim();
+  }
+
+  if (frameStyle === "minimal") {
+    return `
+      <rect x="22" y="22" width="${surface.width - 44}" height="${surface.height - 44}" rx="20" ry="20" fill="none" stroke="rgba(255,250,244,0.82)" stroke-width="2" />
+      ${dateStampText ? `<text x="${surface.width - 40}" y="${surface.height - 42}" fill="${resolveFrameTextFill(0.78)}" font-size="18" font-weight="600" font-family="Arial, sans-serif" text-anchor="end">${escapeXml(dateStampText)}</text>` : ""}
+    `.trim();
+  }
+
+  if (frameStyle === "cinemaFilm") {
+    const barHeight = Math.max(42, Math.round(surface.height * 0.068));
+    const holeWidth = Math.max(8, Math.round(surface.width * 0.012));
+    const holeHeight = Math.max(10, Math.round(barHeight * 0.26));
+    const holeGap = Math.max(26, Math.round(surface.width * 0.026));
+    const holeCount = Math.floor(surface.width / holeGap);
+    const holes = Array.from({ length: holeCount }, (_, index) => {
+      const cx = Math.round(holeGap * index + holeGap / 2);
+      const x = Math.round(cx - holeWidth / 2);
+      const topY = Math.round(barHeight / 2 - holeHeight / 2);
+      const bottomY = Math.round(surface.height - barHeight / 2 - holeHeight / 2);
+      return `
+        <rect x="${x}" y="${topY}" width="${holeWidth}" height="${holeHeight}" rx="${Math.round(holeWidth / 2)}" ry="${Math.round(holeWidth / 2)}" fill="black" />
+        <rect x="${x}" y="${bottomY}" width="${holeWidth}" height="${holeHeight}" rx="${Math.round(holeWidth / 2)}" ry="${Math.round(holeWidth / 2)}" fill="black" />
+      `.trim();
+    }).join("");
+
+    return `
+      <mask id="cinemaFilmMask">
+        <rect x="0" y="0" width="${surface.width}" height="${surface.height}" fill="white" />
+        ${holes}
+      </mask>
+      <rect x="0" y="0" width="${surface.width}" height="${barHeight}" fill="rgba(12,10,9,0.96)" mask="url(#cinemaFilmMask)" />
+      <rect x="0" y="${surface.height - barHeight}" width="${surface.width}" height="${barHeight}" fill="rgba(12,10,9,0.96)" mask="url(#cinemaFilmMask)" />
+      <rect x="0" y="${Math.round(barHeight - 2)}" width="${surface.width}" height="1" fill="rgba(255,250,244,0.12)" />
+      <rect x="0" y="${surface.height - barHeight + 1}" width="${surface.width}" height="1" fill="rgba(255,250,244,0.12)" />
+      ${filmNumberText ? `<text x="36" y="${surface.height - Math.round(barHeight * 0.3)}" fill="${resolveFrameTextShadow()}" font-size="21" font-weight="700" font-family="'Courier New', monospace">${escapeXml(filmNumberText)}</text>` : ""}
+      ${filmNumberText ? `<text x="36" y="${surface.height - Math.round(barHeight * 0.32)}" fill="${resolveFrameTextFill(0.88)}" font-size="21" font-weight="700" font-family="'Courier New', monospace">${escapeXml(filmNumberText)}</text>` : ""}
+      ${dateStampText ? `<text x="${surface.width - 36}" y="${surface.height - Math.round(barHeight * 0.32)}" fill="${resolveFrameTextFill(0.8)}" font-size="20" font-weight="700" font-family="'Courier New', monospace" text-anchor="end">${escapeXml(dateStampText)}</text>` : ""}
     `.trim();
   }
 
@@ -318,16 +624,23 @@ export function renderInstagramContentSvg(input: {
   const lines = splitOverlayLines(input.overlayText);
   const escapedMood = escapeXml(input.moodCategory);
   const renderVariant = Math.max(0, input.renderVariant ?? 0);
-  const position = resolveOverlayPosition(input.overlayStyle.position, lines.length);
+  const outputFormat = resolveInstagramOutputFormat(input.overlayStyle.aspectRatio);
+  const surface = { width: outputFormat.width, height: outputFormat.height };
+  const position = resolveOverlayPosition(input.overlayStyle.position, lines.length, surface);
   const adjustedBaseY =
     position.baseY + inputSafeOffset(input.overlayStyle.position, input.overlayStyle.yOffset);
   const fontSize = resolveFontSize(input.overlayStyle.fontSize);
   const fontWeight = resolveFontWeight(input.overlayStyle.fontWeight);
   const fontFamily = resolveFontFamily(input.overlayStyle.fontFamily);
   const textColor = resolveTextColor(input.overlayStyle.textColor);
-  const imageFilterOverlay = resolveImageFilterOverlay(
-    input.overlayStyle.imageFilter,
-    input.overlayStyle.filterStrength,
+  const imageFilterOverlay = scaleFullSurfaceRects(
+    resolveImageFilterOverlay(input.overlayStyle.imageFilter, input.overlayStyle.filterStrength),
+    surface,
+  );
+  const renderConfig = buildRenderConfig(input.overlayStyle);
+  const cameraStyleOverlay = scaleFullSurfaceRects(
+    resolveRenderSvgOverlay(renderConfig, input.overlayStyle.filterStrength),
+    surface,
   );
   const textShadow = resolveTextShadow(input.overlayStyle.shadow);
   const background = resolveBackground(input.overlayStyle.background);
@@ -351,7 +664,7 @@ export function renderInstagramContentSvg(input: {
   const frameOpacity = (0.1 + variantUnit(renderVariant, 3) * 0.12).toFixed(3);
   const accentOpacity = (0.08 + variantUnit(renderVariant, 4) * 0.1).toFixed(3);
   const accentX = Math.round(180 + variantUnit(renderVariant, 5) * 720);
-  const accentY = Math.round(220 + variantUnit(renderVariant, 6) * 820);
+  const accentY = Math.round(surface.height * 0.16 + variantUnit(renderVariant, 6) * surface.height * 0.61);
   const accentRadius = Math.round(120 + variantUnit(renderVariant, 7) * 90);
   const accentColor =
     input.overlayStyle.imageFilter === "soft_warm" || input.overlayStyle.imageFilter === "sunset_orange"
@@ -361,6 +674,13 @@ export function renderInstagramContentSvg(input: {
         : input.overlayStyle.imageFilter === "nature_fresh"
           ? "155, 213, 171"
           : "255, 244, 226";
+  const baseImageNode = renderBaseImage(input.imageDataUrl, input.overlayStyle.imageFilter, renderConfig, surface);
+  const styleFrameNode = renderStyleFrame(input.overlayStyle.imageFilter, surface);
+  const frameOverlayNode = renderFrameOverlay(input.overlayStyle, surface);
+  const overlayGradientNode =
+    input.overlayStyle.frameStyle === "none"
+      ? `<rect x="0" y="0" width="${surface.width}" height="${surface.height}" fill="url(#overlayGradient)" />`
+      : "";
 
   const lineNodes = lines
     .map((line, index) => {
@@ -373,7 +693,7 @@ export function renderInstagramContentSvg(input: {
     .join("");
 
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+    <svg xmlns="http://www.w3.org/2000/svg" width="${surface.width}" height="${surface.height}" viewBox="0 0 ${surface.width} ${surface.height}">
       <defs>
         <linearGradient id="overlayGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="rgba(19,16,13,${topGradientOpacity})" />
@@ -383,16 +703,33 @@ export function renderInstagramContentSvg(input: {
           <stop offset="0%" stop-color="rgba(${accentColor}, ${accentOpacity})" />
           <stop offset="100%" stop-color="rgba(${accentColor}, 0)" />
         </radialGradient>
+        <filter id="grayscaleImage">
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncR type="linear" slope="1.08" intercept="-0.03" />
+            <feFuncG type="linear" slope="1.08" intercept="-0.03" />
+            <feFuncB type="linear" slope="1.08" intercept="-0.03" />
+          </feComponentTransfer>
+        </filter>
+        <filter id="filmToneImage">
+          <feColorMatrix type="matrix" values="1.04 0.03 0.01 0 0.02 0.02 0.96 0.02 0 0.01 0.01 0.02 0.86 0 0 0 0 0 1 0" />
+        </filter>
+        <clipPath id="portraitFocusClip">
+          <circle cx="${resolveFocusGeometry(renderConfig, surface).centerX}" cy="${resolveFocusGeometry(renderConfig, surface).centerY}" r="${resolveFocusGeometry(renderConfig, surface).radius}" />
+        </clipPath>
       </defs>
-      <image href="${input.imageDataUrl}" x="0" y="0" width="1080" height="1350" preserveAspectRatio="xMidYMid slice" />
+      ${baseImageNode}
       ${imageFilterOverlay}
+      ${cameraStyleOverlay}
       <circle cx="${accentX}" cy="${accentY}" r="${accentRadius}" fill="url(#accentGlow)" />
-      <rect x="0" y="0" width="1080" height="1350" fill="url(#overlayGradient)" />
-      <rect x="28" y="28" width="1024" height="1294" rx="36" ry="36" fill="none" stroke="rgba(255,250,244,${frameOpacity})" stroke-width="2" />
+      ${overlayGradientNode}
+      <rect x="28" y="28" width="${surface.width - 56}" height="${surface.height - 56}" rx="36" ry="36" fill="none" stroke="rgba(255,250,244,${frameOpacity})" stroke-width="2" />
+      ${styleFrameNode}
       <rect x="72" y="72" rx="28" ry="28" width="240" height="64" fill="rgba(255,250,244,0.88)" />
       <text x="108" y="114" fill="#7a4123" font-size="28" font-weight="700" font-family="Arial, sans-serif">${escapedMood}</text>
       ${backgroundNode}
       ${lineNodes}
+      ${frameOverlayNode}
     </svg>
   `.trim();
 }

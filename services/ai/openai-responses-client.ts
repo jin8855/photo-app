@@ -1,5 +1,9 @@
 import OpenAI from "openai";
-import type { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
+import type {
+  ResponseCreateParamsNonStreaming,
+  ResponseInputContent,
+  ResponseInputMessageContentList,
+} from "openai/resources/responses/responses";
 
 import { getOpenAiConfig } from "@/resources/config/openai";
 import { AI_ERROR_CODES, AiClientError } from "@/services/ai/ai-errors";
@@ -10,6 +14,16 @@ type CreateJsonResponseInput = {
   userPrompt: string;
   schemaName: string;
   schema: Record<string, unknown>;
+};
+
+type ResponseImageInput = {
+  kind: "url" | "data";
+  value: string;
+};
+
+type CreateStructuredResponseInput<TPayload> = CreateJsonResponseInput & {
+  image?: ResponseImageInput;
+  validate: (value: unknown) => TPayload | null;
 };
 
 type JsonResponseResult<TPayload> = {
@@ -53,6 +67,28 @@ export class OpenAiResponsesClient {
   async createJsonResponse(
     input: CreateJsonResponseInput,
   ): Promise<JsonResponseResult<{ phrases: string[]; captions: string[] }>> {
+    return this.createStructuredResponse({
+      ...input,
+      validate: validateOpenAiTextPayload,
+    });
+  }
+
+  async createStructuredResponse<TPayload>(
+    input: CreateStructuredResponseInput<TPayload>,
+  ): Promise<JsonResponseResult<TPayload>> {
+    const userContent: ResponseInputMessageContentList = [
+      { type: "input_text", text: input.userPrompt },
+      ...(input.image
+        ? [
+            {
+              type: "input_image" as const,
+              image_url: input.image.value,
+              detail: "auto" as const,
+            } satisfies ResponseInputContent,
+          ]
+        : []),
+    ];
+
     const requestBody = {
       model: this.config.model,
       input: [
@@ -62,7 +98,7 @@ export class OpenAiResponsesClient {
         },
         {
           role: "user",
-          content: [{ type: "input_text", text: input.userPrompt }],
+          content: userContent,
         },
       ],
       text: {
@@ -89,7 +125,7 @@ export class OpenAiResponsesClient {
       throw new AiClientError(AI_ERROR_CODES.openAiInvalidJsonResponse);
     }
 
-    const payload = validateOpenAiTextPayload(parsed);
+    const payload = input.validate(parsed);
 
     if (!payload) {
       throw new AiClientError(AI_ERROR_CODES.openAiInvalidPayload);

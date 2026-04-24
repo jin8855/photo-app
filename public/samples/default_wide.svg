@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Wide shot sample">
+  <rect width="640" height="480" fill="#e7eff3"/>
+  <rect y="292" width="640" height="188" fill="#d5b08b"/>
+  <path d="M0 292 L150 172 L264 292 Z" fill="#8b7f66"/>
+  <path d="M214 292 L390 132 L640 292 Z" fill="#706a5b"/>
+  <rect x="76" y="360" width="210" height="16" rx="8" fill="#2f2923" opacity="0.18"/>
+</svg>

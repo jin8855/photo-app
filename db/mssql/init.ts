@@ -51,6 +51,7 @@ export function ensureAnalysesTableReady(): void {
           photo_id INT NOT NULL,
           scene_type NVARCHAR(100) NOT NULL,
           mood_category NVARCHAR(100) NOT NULL,
+          photo_style_type NVARCHAR(100) NOT NULL CONSTRAINT DF_analyses_photo_style_type DEFAULT N'other',
           short_review NVARCHAR(500) NOT NULL,
           long_review NVARCHAR(MAX) NOT NULL,
           recommended_text_position NVARCHAR(100) NOT NULL,
@@ -82,6 +83,12 @@ export function ensureAnalysesTableReady(): void {
       BEGIN
         ALTER TABLE dbo.analyses
         ADD generation_source NVARCHAR(50) NOT NULL CONSTRAINT DF_analyses_generation_source DEFAULT N'mock'
+      END;
+
+      IF COL_LENGTH(N'dbo.analyses', N'photo_style_type') IS NULL
+      BEGIN
+        ALTER TABLE dbo.analyses
+        ADD photo_style_type NVARCHAR(100) NOT NULL CONSTRAINT DF_analyses_photo_style_type DEFAULT N'other'
       END;
 
       IF COL_LENGTH(N'dbo.analyses', N'generation_warning') IS NULL

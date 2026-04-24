@@ -8,17 +8,21 @@ type AppShellProps = {
 };
 
 export function AppShell({ children, title, subtitle, actions }: AppShellProps) {
+  const hasHeader = Boolean(title || subtitle || actions);
+
   return (
     <div style={styles.page}>
       <div style={styles.backdrop} />
       <main style={styles.main}>
-        <header style={styles.header}>
-          <div style={styles.headerTop}>
-            <div style={styles.badge}>{title}</div>
-            {actions ? <div style={styles.actions}>{actions}</div> : null}
-          </div>
-          <h1 style={styles.heading}>{subtitle}</h1>
-        </header>
+        {hasHeader ? (
+          <header style={styles.header}>
+            <div style={styles.headerTop}>
+              {title ? <div style={styles.badge}>{title}</div> : null}
+              {actions ? <div style={styles.actions}>{actions}</div> : null}
+            </div>
+            {subtitle ? <h1 style={styles.heading}>{subtitle}</h1> : null}
+          </header>
+        ) : null}
         {children}
       </main>
     </div>
@@ -42,12 +46,12 @@ const styles: Record<string, CSSProperties> = {
     position: "relative",
     maxWidth: "1120px",
     margin: "0 auto",
-    padding: "48px 24px 72px",
+    padding: "28px 24px 64px",
   },
   header: {
     display: "grid",
-    gap: "16px",
-    marginBottom: "28px",
+    gap: "10px",
+    marginBottom: "16px",
   },
   headerTop: {
     display: "flex",
@@ -63,12 +67,12 @@ const styles: Record<string, CSSProperties> = {
   },
   badge: {
     width: "fit-content",
-    padding: "10px 14px",
+    padding: "6px 10px",
     borderRadius: "999px",
     background: "rgba(255, 255, 255, 0.72)",
     border: "1px solid rgba(64, 47, 30, 0.08)",
     color: "#7a4a31",
-    fontSize: "0.92rem",
+    fontSize: "0.78rem",
     fontWeight: 700,
     letterSpacing: "0.02em",
     boxShadow: "0 10px 40px rgba(91, 60, 36, 0.08)",

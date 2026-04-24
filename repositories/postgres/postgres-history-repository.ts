@@ -3,6 +3,7 @@ import {
   normalizeScoredPhrases,
   type PhotoAnalysisResult,
 } from "@/lib/types/analysis";
+import { ensurePostgresDatabaseReadyAsync } from "@/db/postgres/postgres-bootstrapper";
 import type { GeneratedCommerceContent } from "@/lib/types/commerce";
 import type { GeneratedContentSetPayload } from "@/lib/types/content";
 import type { UploadedPhotoRecord } from "@/lib/types/database";
@@ -14,6 +15,7 @@ import {
 } from "@/repositories/postgres/postgres-mappers";
 import { createPostgresQueryClient } from "@/repositories/postgres/postgres-query-client";
 import { assertPostgresConfigured } from "@/repositories/postgres/postgres-repository-errors";
+import { resolveStoredPhotoPreviewUrl } from "@/services/storage/photo-preview-url";
 
 type HistoryListRow = {
   photo_id: number | string;
@@ -39,6 +41,7 @@ type PostgresAnalysisRow = {
   photo_id: number | string;
   scene_type: string;
   mood_category: string;
+  photo_style_type: string;
   short_review: string;
   long_review: string;
   recommended_text_position: string;
@@ -68,7 +71,7 @@ function mapHistoryPhoto(row: PostgresPhotoRow): UploadedPhotoRecord {
 
   return {
     ...photo,
-    previewUrl: photo.filePath,
+    previewUrl: resolveStoredPhotoPreviewUrl(photo.filePath),
   };
 }
 
@@ -80,6 +83,7 @@ function mapHistoryAnalysis(row: PostgresAnalysisRow): PhotoAnalysisResult {
     photoId: analysis.photoId,
     scene_type: analysis.sceneType,
     mood_category: analysis.moodCategory,
+    photo_style_type: analysis.photoStyleType as PhotoAnalysisResult["photo_style_type"],
     short_review: analysis.shortReview,
     long_review: analysis.longReview,
     recommended_text_position: analysis.recommendedTextPosition,
@@ -103,6 +107,7 @@ export class PostgresHistoryRepository implements HistoryRepository {
   }
 
   async list(): Promise<HistoryListItem[]> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<HistoryListRow>(
       `
         select
@@ -121,6 +126,7 @@ export class PostgresHistoryRepository implements HistoryRepository {
             id,
             scene_type,
             mood_category,
+            photo_style_type,
             short_review,
             created_at
           from public.analyses
@@ -136,6 +142,7 @@ export class PostgresHistoryRepository implements HistoryRepository {
       photoId: Number(row.photo_id),
       originalName: row.original_name,
       filePath: row.file_path,
+      previewUrl: resolveStoredPhotoPreviewUrl(row.file_path),
       photoCreatedAt: toTimestampString(row.photo_created_at) ?? "",
       latestAnalysisId:
         row.latest_analysis_id === null ? null : Number(row.latest_analysis_id),
@@ -147,6 +154,7 @@ export class PostgresHistoryRepository implements HistoryRepository {
   }
 
   async findDetailByPhotoId(photoId: number): Promise<HistoryDetail | null> {
+    await ensurePostgresDatabaseReadyAsync();
     const photoRows = await this.client.query<PostgresPhotoRow>(
       `
         select id, original_name, file_path, created_at
@@ -168,6 +176,7 @@ export class PostgresHistoryRepository implements HistoryRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,

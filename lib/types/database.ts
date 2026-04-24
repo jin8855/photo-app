@@ -12,6 +12,7 @@ export type AnalysisRecord = {
   photoId: number;
   sceneType: string;
   moodCategory: string;
+  photoStyleType: string;
   shortReview: string;
   longReview: string;
   recommendedTextPosition: string;
@@ -37,6 +38,7 @@ export type CreateAnalysisInput = {
   photoId: number;
   sceneType: string;
   moodCategory: string;
+  photoStyleType: string;
   shortReview: string;
   longReview: string;
   recommendedTextPosition: string;

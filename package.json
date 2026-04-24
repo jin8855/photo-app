@@ -9,6 +9,7 @@
     "postbuild": "tsx scripts/normalize-tsconfig.ts",
     "start": "next start",
     "typecheck": "tsx scripts/normalize-tsconfig.ts && tsc --noEmit",
+    "test:photo-styles": "tsx tests/photo-style-regression.test.ts",
     "ai:verify": "tsx scripts/verify-openai-client.ts",
     "storage:verify": "tsx scripts/verify-supabase-storage.ts",
     "db:init": "tsx db/init.ts",

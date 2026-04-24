@@ -51,6 +51,27 @@ function normalizePublicImagePath(filePath: string): string {
 }
 
 async function readImageAsDataUrl(filePath: string): Promise<string> {
+  if (/^https?:\/\//i.test(filePath)) {
+    const response = await fetch(filePath);
+
+    if (!response.ok) {
+      throw new AppError({
+        code: "contentSetFailed",
+        status: 400,
+        message: "Content image URL could not be fetched.",
+        details: {
+          filePath,
+          status: response.status,
+        },
+      });
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const mimeType = response.headers.get("content-type") || "image/jpeg";
+
+    return `data:${mimeType};base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+  }
+
   const absolutePath = normalizePublicImagePath(filePath);
   const buffer = await fs.readFile(absolutePath);
   const mimeType = toMimeType(absolutePath);

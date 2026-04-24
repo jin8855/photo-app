@@ -7,9 +7,9 @@ function isPresent(value: string | undefined): boolean {
 export function validateAppConfig(runtime: AppRuntimeConfig): void {
   if (runtime.databaseProvider === "mssql") {
     const hasConnectionString = isPresent(process.env.MSSQL_CONNECTION_STRING);
-    const hasLegacyInstance = isPresent(process.env.LOCAL_SQLSERVER_INSTANCE);
+    const hasLocalDbFallback = process.env.NODE_ENV !== "production";
 
-    if (!hasConnectionString && !hasLegacyInstance) {
+    if (!hasConnectionString && !hasLocalDbFallback) {
       throw new Error(
         "configMissing:MSSQL_CONNECTION_STRING|LOCAL_SQLSERVER_INSTANCE",
       );

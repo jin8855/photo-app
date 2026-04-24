@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Portrait medium sample">
+  <rect width="640" height="480" fill="#f3dcc2"/>
+  <circle cx="320" cy="192" r="72" fill="#7d5038"/>
+  <rect x="230" y="282" width="180" height="128" rx="62" fill="#9e6a4a"/>
+  <circle cx="444" cy="122" r="88" fill="#fff5de" opacity="0.72"/>
+</svg>

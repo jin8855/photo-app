@@ -49,6 +49,7 @@ export function buildHistoryDetailByPhotoIdQuery(photoId: number): string {
           a.photo_id AS photoId,
           a.scene_type AS sceneType,
           a.mood_category AS moodCategory,
+          a.photo_style_type AS photoStyleType,
           a.short_review AS shortReview,
           a.long_review AS longReview,
           a.recommended_text_position AS recommendedTextPosition,

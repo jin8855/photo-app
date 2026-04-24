@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS analyses (
   photo_id INTEGER NOT NULL,
   scene_type TEXT NOT NULL,
   mood_category TEXT NOT NULL,
+  photo_style_type TEXT NOT NULL DEFAULT 'other',
   short_review TEXT NOT NULL,
   long_review TEXT NOT NULL,
   recommended_text_position TEXT NOT NULL,

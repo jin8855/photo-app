@@ -12,6 +12,7 @@ type PostgresAnalysisRow = {
   photo_id: number | string;
   scene_type: string;
   mood_category: string;
+  photo_style_type: string;
   short_review: string;
   long_review: string;
   recommended_text_position: string;
@@ -51,6 +52,7 @@ export function mapPostgresAnalysisRow(row: PostgresAnalysisRow): AnalysisRecord
     photoId: Number(row.photo_id),
     sceneType: row.scene_type,
     moodCategory: row.mood_category,
+    photoStyleType: row.photo_style_type,
     shortReview: row.short_review,
     longReview: row.long_review,
     recommendedTextPosition: row.recommended_text_position,

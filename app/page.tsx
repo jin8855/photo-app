@@ -7,7 +7,7 @@ const t = createTranslator("ko");
 
 export default function HomePage() {
   return (
-    <AppShell title={t("uploadPage.shell.badge")} subtitle={t("uploadPage.shell.title")}>
+    <AppShell title="" subtitle="">
       <PhotoUploadScreen messages={createPhotoUploadScreenMessages(t)} />
     </AppShell>
   );

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Car medium sample">
+  <rect width="640" height="480" fill="#e5edf1"/>
+  <rect y="286" width="640" height="194" fill="#2e3335"/>
+  <path d="M132 270 L230 194 H430 L526 270 Z" fill="#2bb7c8"/>
+  <rect x="170" y="270" width="330" height="72" rx="28" fill="#1d8fa0"/>
+  <circle cx="220" cy="346" r="44" fill="#17191a"/>
+  <circle cx="444" cy="346" r="44" fill="#17191a"/>
+  <path d="M72 392 C220 330 420 430 586 346" stroke="#f6f6f6" stroke-width="12" opacity="0.34"/>
+</svg>

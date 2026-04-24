@@ -1,4 +1,5 @@
 import type { AnalysisRecord, CreateAnalysisInput } from "@/lib/types/database";
+import { ensurePostgresDatabaseReadyAsync } from "@/db/postgres/postgres-bootstrapper";
 import type { AnalysisRepository } from "@/repositories/analysis-repository";
 import { mapPostgresAnalysisRow } from "@/repositories/postgres/postgres-mappers";
 import { createPostgresQueryClient } from "@/repositories/postgres/postgres-query-client";
@@ -9,6 +10,7 @@ type PostgresAnalysisRow = {
   photo_id: number | string;
   scene_type: string;
   mood_category: string;
+  photo_style_type: string;
   short_review: string;
   long_review: string;
   recommended_text_position: string;
@@ -25,10 +27,6 @@ type PostgresAnalysisRow = {
   created_at: string | Date;
 };
 
-function parseJsonPayload(value: string): unknown {
-  return JSON.parse(value);
-}
-
 export class PostgresAnalysisRepository implements AnalysisRepository {
   private readonly client = createPostgresQueryClient();
 
@@ -37,12 +35,14 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
   }
 
   async saveAnalysis(input: CreateAnalysisInput): Promise<AnalysisRecord> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresAnalysisRow>(
       `
         insert into public.analyses (
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,
@@ -56,14 +56,15 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
           generation_warning
         )
         values (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9,
-          $10::jsonb, $11::jsonb, $12::jsonb, $13, $14
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+          $11::jsonb, $12::jsonb, $13::jsonb, $14, $15
         )
         returning
           id,
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,
@@ -83,15 +84,16 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
         input.photoId,
         input.sceneType,
         input.moodCategory,
+        input.photoStyleType,
         input.shortReview,
         input.longReview,
         input.recommendedTextPosition,
         input.wallpaperScore,
         input.socialScore,
         input.commercialScore,
-        parseJsonPayload(input.phrasesJson),
-        parseJsonPayload(input.captionsJson),
-        parseJsonPayload(input.hashtagsJson),
+        input.phrasesJson,
+        input.captionsJson,
+        input.hashtagsJson,
         input.generationSource,
         input.generationWarning,
       ],
@@ -109,6 +111,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
     analysisId: number,
     contentSetJson: string,
   ): Promise<AnalysisRecord | null> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresAnalysisRow>(
       `
         update public.analyses
@@ -119,6 +122,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,
@@ -134,7 +138,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
           commerce_content_json,
           created_at
       `,
-      [analysisId, parseJsonPayload(contentSetJson)],
+      [analysisId, contentSetJson],
     );
 
     return rows[0] ? mapPostgresAnalysisRow(rows[0]) : null;
@@ -144,6 +148,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
     analysisId: number,
     commerceContentJson: string,
   ): Promise<AnalysisRecord | null> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresAnalysisRow>(
       `
         update public.analyses
@@ -154,6 +159,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,
@@ -169,13 +175,14 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
           commerce_content_json,
           created_at
       `,
-      [analysisId, parseJsonPayload(commerceContentJson)],
+      [analysisId, commerceContentJson],
     );
 
     return rows[0] ? mapPostgresAnalysisRow(rows[0]) : null;
   }
 
   async getAnalysis(id: number): Promise<AnalysisRecord | null> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresAnalysisRow>(
       `
         select
@@ -183,6 +190,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,
@@ -223,6 +231,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
   }
 
   async listByPhotoId(photoId: number): Promise<AnalysisRecord[]> {
+    await ensurePostgresDatabaseReadyAsync();
     const rows = await this.client.query<PostgresAnalysisRow>(
       `
         select
@@ -230,6 +239,7 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,

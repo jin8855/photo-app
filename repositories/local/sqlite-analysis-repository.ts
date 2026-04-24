@@ -9,6 +9,7 @@ type AnalysisRow = {
   photo_id: number;
   scene_type: string;
   mood_category: string;
+  photo_style_type: string;
   short_review: string;
   long_review: string;
   recommended_text_position: string;
@@ -35,6 +36,7 @@ export class SqliteAnalysisRepository implements AnalysisRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,
@@ -53,6 +55,7 @@ export class SqliteAnalysisRepository implements AnalysisRepository {
           @photoId,
           @sceneType,
           @moodCategory,
+          @photoStyleType,
           @shortReview,
           @longReview,
           @recommendedTextPosition,
@@ -88,6 +91,7 @@ export class SqliteAnalysisRepository implements AnalysisRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,
@@ -165,6 +169,7 @@ export class SqliteAnalysisRepository implements AnalysisRepository {
           photo_id,
           scene_type,
           mood_category,
+          photo_style_type,
           short_review,
           long_review,
           recommended_text_position,

@@ -2,36 +2,55 @@
   "app": {
     "metadata": {
       "title": "감성 사진 문구 앱",
-      "description": "로컬 브라우저 환경에서 사진 업로드, mock 분석, 결과 확인이 가능한 프로젝트"
+      "description": "사진 업로드, 분석, 문구 생성, 결과 이미지 저장이 가능한 프로젝트"
     }
   },
   "uploadPage": {
     "shell": {
       "badge": "Photo Upload Starter",
-      "title": "사진 업로드와 mock 분석"
+      "title": "무엇부터 할까요?"
+    },
+    "homeSplit": {
+      "uploadTitle": "사진 찍었어요",
+      "uploadDescription": "찍은 사진을 올리고 바로 결과를 받아보세요.",
+      "guideTitle": "지금 찍으려고요",
+      "guideDescription": "상황에 맞는 촬영 팁부터 보고 시작하세요.",
+      "historyLabel": "이전 결과 보기",
+      "backLabel": "처음 선택으로 돌아가기"
     },
     "hero": {
-      "title": "이미지를 업로드하고 저장한 뒤 mock 분석 결과를 확인할 수 있습니다",
+      "title": "사진을 올리고 어울리는 문구와 결과 이미지를 만들어보세요",
       "description": "사진 한 장으로 감성 문구와 바로 사용할 콘텐츠를 만들 수 있습니다.",
       "steps": {
         "upload": "사진 올리기",
-        "analyze": "분석 실행",
+        "analyze": "사진 분석",
         "save": "이미지 저장"
       }
     },
     "form": {
       "selectedLabel": "선택한 이미지",
       "emptySelection": "아직 선택한 파일이 없습니다",
+      "selectedCount": "{count}장을 선택했습니다",
       "chooseButton": "이미지 선택",
-      "uploadButton": "업로드 실행",
-      "uploadingButton": "업로드 진행 중",
-      "analyzeButton": "mock 분석 실행",
-      "analyzingButton": "mock 분석 진행 중",
-      "historyButton": "히스토리 보기",
+      "uploadButton": "사진 올리기",
+      "uploadingButton": "사진 올리는 중",
+      "analyzeButton": "사진 분석하기",
+      "analyzingButton": "사진 분석 중",
+      "historyButton": "이전 결과 보기",
+      "shootingGuideButton": "촬영 가이드",
+      "deviceTypeLabel": "촬영 기기 선택",
+      "deviceTypePlaceholder": "나중에 선택해도 됩니다",
+      "deviceTypeHint": "선택하지 않아도 분석과 문구 생성은 그대로 진행됩니다.",
+      "deviceTypeSelectedHint": "선택한 기기에 맞춰 사진 개선 팁과 촬영 가이드를 조금 더 맞춥니다.",
+      "deviceTypes": {
+        "galaxyS25Ultra": "Galaxy S25 Ultra",
+        "galaxyS26Ultra": "Galaxy S26 Ultra",
+        "genericSmartphone": "일반 스마트폰"
+      },
       "helper": "이미지 파일만 업로드할 수 있습니다.",
       "nextStepTitle": "다음 단계",
-      "nextStepDescription": "업로드가 끝났습니다. 이제 분석을 실행하면 문구와 완성 이미지를 바로 볼 수 있습니다.",
-      "nextStepButton": "분석 시작"
+      "nextStepDescription": "사진이 올라갔습니다. 이제 사진을 분석하면 어울리는 문구와 결과 이미지를 볼 수 있습니다.",
+      "nextStepButton": "사진 분석하기"
     },
     "preview": {
       "title": "업로드 결과 미리보기",
@@ -41,11 +60,14 @@
       "metaCollapse": "접기",
       "metaName": "원본 파일명",
       "metaPath": "저장 경로",
-      "metaCreatedAt": "저장 시각"
+      "metaCreatedAt": "저장 시각",
+      "primaryPickerTitle": "대표 사진 선택",
+      "primaryBadge": "대표",
+      "selectPrimaryButton": "대표로 선택"
     },
     "analysis": {
       "title": "분석 결과",
-      "description": "이미지를 기준으로 생성된 mock 분석 결과를 한곳에서 확인할 수 있습니다.",
+      "description": "사진을 기준으로 생성된 분석 결과를 한곳에서 확인할 수 있습니다.",
       "imageAltPrefix": "분석 대상 이미지",
       "sceneType": "장면 유형",
       "moodCategory": "감성 카테고리",
@@ -62,16 +84,16 @@
       "captions": "캡션 리스트",
       "hashtags": "해시태그",
       "sourceOpenAi": "AI 생성",
-      "sourceMock": "mock 생성",
+      "sourceMock": "기본 생성",
       "warnings": {
         "heuristicPreset": "감성 분류는 현재 규칙 기반으로 추정되었습니다.",
-        "openAiFallbackToMock": "AI 생성에 실패해 mock 결과로 대체되었습니다.",
-        "openAiKeyMissing": "OpenAI API 키가 없어 mock 결과를 표시합니다."
+        "openAiFallbackToMock": "AI 생성에 실패해 기본 결과로 대체되었습니다.",
+        "openAiKeyMissing": "OpenAI API 키가 없어 기본 결과를 표시합니다."
       },
       "copyButton": "복사",
       "copiedButton": "복사됨",
       "emptyList": "표시할 항목이 없습니다.",
-      "applyRecommendedButton": "콘텐츠 세트에 적용",
+      "applyRecommendedButton": "직접 꾸미기에 적용",
       "cta": {
         "title": "바로 사용 가능한 결과",
         "description": "완성 이미지를 저장하고, 캡션과 해시태그를 바로 가져갈 수 있습니다.",
@@ -83,6 +105,52 @@
         "currentCaption": "현재 적용 중인 캡션",
         "detailsTitle": "분석 요약"
       },
+      "resultSections": {
+        "coreTitle": "1. 바로 쓰는 영역",
+        "coreDescription": "완성 이미지와 캡션을 확인하고 바로 저장하거나 복사합니다.",
+        "selectionTitle": "2. 느낌 바꾸기 영역",
+        "selectionDescription": "패키지는 한 번에 바꾸고, 분위기·말투·감정은 직접 골라 조정합니다.",
+        "extensionTitle": "3. 더 보기 영역",
+        "extensionDescription": "분석 요약, 점수, 사진 개선 팁과 추가 활용 기능을 확인합니다.",
+        "packageTitle": "패키지",
+        "toneTitle": "분위기 선택",
+        "toneDescription": "차분하게, 밝게처럼 전체 느낌을 바꿉니다.",
+        "styleTitle": "말투 선택",
+        "styleDescription": "담백하게, 강하게처럼 말하는 방식을 바꿉니다.",
+        "themeTitle": "감정 선택",
+        "themeDescription": "위로, 설렘처럼 문장에 담길 감정을 고릅니다.",
+        "guideButton": "촬영 가이드로 이동",
+        "customButton": "직접 꾸미기",
+        "stepResultLabel": "분석 결과",
+        "stepEditLabel": "변경하기",
+          "stepCompleteLabel": "완성",
+          "analysisResultTitle": "분석 결과",
+          "analysisResultDescription": "사진을 기준으로 생성된 분석 결과를 한곳에서 확인할 수 있습니다.",
+          "editDescription": "사진과 문구를 나눠 조정해 최종 이미지를 만듭니다.",
+          "phraseChangeButton": "문구 변경",
+          "photoEditTab": "사진 변경",
+          "textEditTab": "문구 변경",
+          "editSaveButton": "변경 저장"
+      },
+      "photoTips": {
+        "title": "이 사진 개선 팁",
+        "empty": "표시할 사진 개선 팁이 없습니다.",
+        "detailButton": "자세히 보기",
+        "collapseButton": "접기",
+        "detailLabel": "방법",
+        "whyLabel": "이유",
+        "whenLabel": "추천 상황",
+        "exampleLabel": "예시",
+        "settingHintLabel": "설정 힌트",
+        "deviceHintLabel": "기기 힌트",
+        "categories": {
+          "composition": "구도",
+          "lighting": "빛",
+          "color": "색감",
+          "retake": "다시 찍기",
+          "device": "기기 힌트"
+        }
+      },
       "tabs": {
         "review": "총평",
         "phrases": "문구 리스트",
@@ -93,11 +161,27 @@
         "captionCopy": "인스타 캡션 복사",
         "hashtagCopy": "해시태그 복사",
         "sharePlaceholder": "인스타 공유 예정",
-        "contentSetCreate": "콘텐츠 세트 생성",
-        "contentSetCreating": "콘텐츠 세트 생성 중",
-        "contentSetDownload": "이미지 다운로드",
-        "contentSetTextCopy": "세트 텍스트 복사",
-        "contentSetPreviewTitle": "인스타 콘텐츠 세트",
+        "contentSetCreate": "결과 이미지 만들기",
+        "contentSetCreating": "결과 이미지 만드는 중",
+        "contentSetReadyBadge": "완료됨",
+        "contentSetReadyDescription": "완성 이미지가 준비됐습니다. 저장하거나 캡션을 복사해 바로 사용하세요.",
+        "contentSetDownload": "완성 이미지 저장",
+        "contentSetTextCopy": "캡션 세트 복사",
+        "contentSetPreviewTitle": "직접 꾸미기",
+        "contentSetPreviewDescription": "분위기·말투·감정은 문구와 캡션 선택에서 확인하고, 필터와 글씨 설정으로 최종 이미지를 꾸밉니다.",
+        "livePreviewTitle": "바로 미리보기",
+        "livePreviewDescription": "프리셋을 누르면 아래 미리보기가 즉시 바뀝니다. 결과 이미지는 버튼을 눌러 확정합니다.",
+        "basicCustomizeTitle": "기본 꾸미기",
+        "basicCustomizeDescription": "사진 느낌과 문구를 나눠 고르면 무엇을 바꾸는지 더 쉽게 알 수 있습니다.",
+        "photoFeelTitle": "사진 느낌 변경",
+        "photoFeelDescription": "분위기와 필터 프리셋으로 이미지의 인상을 바꿉니다.",
+        "textChangeTitle": "문구 변경",
+        "textChangeDescription": "말투와 감정에 맞는 문구와 캡션을 고릅니다.",
+        "advancedCustomizeTitle": "자세히 꾸미기",
+        "advancedCustomizeDescription": "글씨 위치, 크기, 색상, 저장한 프리셋은 필요할 때만 조정하세요.",
+        "advancedExpandButton": "자세히 보기",
+        "advancedCollapseButton": "접기",
+        "presetManageTitle": "프리셋 저장과 관리",
         "contentSetCaptionLabel": "캡션",
         "contentSetHashtagLabel": "해시태그",
         "contentSetImageLabel": "문구 포함 이미지",
@@ -108,18 +192,39 @@
         "overlaySizeLabel": "글씨 크기",
         "overlayWeightLabel": "글씨 굵기",
         "overlayColorLabel": "글씨 색상",
-        "imageFilterLabel": "사진 필터",
+        "imageFilterLabel": "사진 스타일",
+        "aspectRatioLabel": "출력 비율",
+        "imageFitModeLabel": "사진 맞춤",
+        "cameraStyleLabel": "카메라 스타일",
+        "frameStyleLabel": "프레임",
+        "frameTextLabel": "폴라로이드 문구",
+        "frameTextPlaceholder": "오늘의 기억",
+        "frameTextHelp": "한 줄만 입력할 수 있어요.",
+        "frameTextColorLabel": "날짜/번호 글씨 색상",
+        "frameTextColorWhite": "흰색",
+        "frameTextColorBlack": "검정",
+        "frameTextColorBrown": "브라운",
+        "frameTextColorCream": "크림",
+        "frameDetailTitle": "프레임 세부 옵션",
+        "frameDetailEmpty": "프레임을 선택하면 옵션이 표시됩니다.",
+        "dateStampLabel": "날짜 자동 찍기",
+        "dateStampHelp": "오늘 날짜를 프레임에 표시해요.",
+        "filmNumberLabel": "필름 번호 표시",
+        "filmNumberPlaceholder": "FRAME 01",
+        "filmNumberHelp": "필름 프레임에만 작은 번호를 표시해요.",
+        "focusStyleLabel": "포커스",
         "imageFilterStrengthLabel": "필터 강도",
         "overlayHorizontalLabel": "가로 위치",
         "overlayVerticalLabel": "세로 위치",
         "overlayShadowLabel": "텍스트 그림자",
         "overlayBackgroundLabel": "배경 박스",
         "overlayLineHeightLabel": "줄 간격",
-        "presetSectionTitle": "스타일 프리셋",
+        "presetSectionTitle": "사진 스타일 프리셋",
+        "comboPresetSectionTitle": "조합 프리셋",
         "presetExpandButton": "펼치기",
         "presetCollapseButton": "접기",
         "presetNamePlaceholder": "프리셋 이름 입력",
-        "presetSaveButton": "현재 스타일 저장",
+        "presetSaveButton": "현재 꾸미기 저장",
         "presetSavedSectionTitle": "저장한 프리셋",
         "presetRenameButton": "이름 변경",
         "presetDeleteButton": "삭제",
@@ -136,6 +241,94 @@
           "vintageCream": "빈티지 크림",
           "sunsetGlow": "선셋 글로우"
         },
+        "presetDescriptions": {
+          "emotionalCard": "감성 있게 부드럽게",
+          "brightIntro": "더 밝고 산뜻하게",
+          "deepFocus": "차분하고 또렷하게",
+          "dawnBlue": "맑고 시원하게",
+          "vintageCream": "따뜻하고 오래된 느낌",
+          "sunsetGlow": "강하고 선명하게"
+        },
+        "comboPresets": {
+          "filmMood": "필름 감성 세트",
+          "polaroidMemory": "폴라로이드 추억",
+          "productThumbnail": "상품 썸네일"
+        },
+        "comboPresetDescriptions": {
+          "filmMood": "빈티지한 필름톤과 필름 프레임을 함께 적용합니다.",
+          "polaroidMemory": "따뜻한 색감과 폴라로이드 여백으로 추억 느낌을 만듭니다.",
+          "productThumbnail": "깔끔하고 선명한 상품 이미지용 스타일입니다."
+        },
+        "selectedPresetBadge": "적용됨",
+        "detailListButton": "자세히 보기",
+        "detailListCloseButton": "닫기",
+        "currentOverlayTextTitle": "이미지 문구",
+        "currentCaptionTitle": "대표 캡션",
+        "quickControlLabels": {
+          "natural": "기본",
+          "bright": "밝게",
+          "calm": "차분하게",
+          "bold": "강하게",
+          "none": "원본",
+          "blackAndWhite": "흑백 느낌",
+          "film": "필름",
+          "portraitFocus": "피사체 강조",
+          "manualFocus": "수동 초점",
+          "warm": "따뜻하게",
+          "cool": "시원하게",
+          "plain": "담백하게",
+          "strong": "강하게",
+          "soft": "부드럽게",
+          "question": "질문형",
+          "comfort": "위로",
+          "thrill": "쾌감",
+          "memory": "기억"
+        },
+        "quickControlDescriptions": {
+          "portraitFocus": "중앙 영역을 기준으로 강조됩니다. 정확한 인물 분리가 아닌 강조 영역 기반 효과입니다.",
+          "manualFocus": "미리보기에서 원을 드래그해 강조 위치를 정합니다."
+        },
+        "cameraStyleLabels": {
+          "none": "기본",
+          "natural": "내추럴",
+          "warmPortrait": "웜 포트레이트",
+          "crisp": "크리스프",
+          "classic": "클래식"
+        },
+        "frameStyleLabels": {
+          "none": "없음",
+          "vintageFilmBorder": "빈티지 필름",
+          "cinemaFilm": "영화필름",
+          "polaroid": "폴라로이드",
+          "minimal": "미니멀"
+        },
+        "aspectRatioLabels": {
+          "square": "1:1 정사각형",
+          "feed": "4:5 피드",
+          "story": "9:16 스토리"
+        },
+        "imageFitModeLabels": {
+          "original": "원본",
+          "contain": "안 잘리게 맞춤",
+          "cover": "꽉 채우기"
+        },
+        "focusStyleLabels": {
+          "none": "없음",
+          "center": "중앙 강조",
+          "manual": "수동 초점"
+        },
+        "focusStyleDescriptions": {
+          "none": "추가 강조 없이 봅니다.",
+          "center": "중앙 영역을 자동으로 강조합니다. 정확한 인물 분리가 아닌 강조 영역 기반 효과입니다.",
+          "manual": "직접 위치와 크기를 정합니다."
+        },
+        "manualFocusRadiusLabel": "초점 영역 크기",
+        "manualFocusNarrowLabel": "좁게",
+        "manualFocusWideLabel": "넓게",
+        "manualFocusHelp": "원 위치를 드래그해 강조 영역을 옮길 수 있어요. 정확한 인물 분리가 아닌 강조 영역 기반 효과입니다.",
+        "manualFocusResetButton": "기본 위치로",
+        "colorFocusLabel": "컬러 강조",
+        "colorFocusHelp": "흑백 사진에서 초점 영역만 원본 컬러로 살립니다.",
         "options": {
           "positions": {
             "topLeft": "상단 왼쪽",
@@ -186,7 +379,7 @@
           },
           "colors": {
             "light": "밝게",
-            "warm": "웜톤",
+            "warm": "따뜻한 색",
             "dark": "짙게",
             "cream": "크림",
             "blush": "블러시 핑크",
@@ -195,11 +388,14 @@
           },
           "filters": {
             "none": "기본",
+            "blackAndWhite": "흑백",
             "softWarm": "소프트 웜",
             "moodyNight": "무디 나이트",
             "fogCalm": "포그 캄",
             "natureFresh": "네이처 프레시",
             "travelFilm": "트래블 필름",
+            "filmFrame": "필름 프레임",
+            "portraitFocus": "피사체 강조",
             "dawnBlue": "새벽 블루",
             "vintageCream": "빈티지 크림",
             "roseMood": "로즈 무드",
@@ -226,27 +422,27 @@
         "empty": "아직 생성된 판매용 콘텐츠가 없습니다."
       },
       "states": {
-        "emptyTitle": "mock 분석을 실행해 주세요",
-        "emptyDescription": "이미지를 업로드한 뒤 mock 분석 실행 버튼을 누르면 감성 카테고리, 점수, 문구, 캡션, 해시태그가 아래 분석 결과 영역에 표시됩니다.",
+        "emptyTitle": "사진 분석을 시작해 주세요",
+        "emptyDescription": "사진을 올린 뒤 사진 분석하기 버튼을 누르면 감성 카테고리, 점수, 문구, 캡션, 해시태그가 아래 결과 영역에 표시됩니다.",
         "loadingTitle": "분석 결과를 준비하고 있습니다",
-        "loadingDescription": "선택한 이미지를 기준으로 mock 분석 결과를 생성하고 있습니다.",
+        "loadingDescription": "선택한 사진을 기준으로 분석 결과를 생성하고 있습니다.",
         "errorTitle": "분석 결과를 불러오지 못했습니다",
         "errorDescription": "요청 처리 중 문제가 발생했습니다."
       }
     },
     "feedback": {
       "success": "업로드가 완료되었습니다.",
-      "analyzeSuccess": "mock 분석이 완료되었습니다.",
+      "analyzeSuccess": "사진 분석이 완료되었습니다.",
       "copySuccess": "복사가 완료되었습니다.",
-      "applySuccess": "추천 문구가 콘텐츠 세트에 적용되었습니다."
+      "applySuccess": "추천 문구가 직접 꾸미기에 적용되었습니다."
     },
     "analysisFeedback": {
-      "contentSetSuccess": "콘텐츠 세트가 완성되었습니다.",
+      "contentSetSuccess": "결과 이미지가 완성되었습니다.",
       "commerceSuccess": "상품 정보가 생성되었습니다."
     },
     "analysisErrors": {
-      "contentSetFailed": "콘텐츠 세트 생성 중 문제가 발생했습니다.",
-      "contentSetSaveFailed": "콘텐츠 세트 저장 중 문제가 발생했습니다.",
+      "contentSetFailed": "결과 이미지 생성 중 문제가 발생했습니다.",
+      "contentSetSaveFailed": "결과 이미지 저장 중 문제가 발생했습니다.",
       "commerceFailed": "상품 정보 생성 중 문제가 발생했습니다.",
       "commerceSaveFailed": "상품 정보 저장 중 문제가 발생했습니다."
     },
@@ -254,10 +450,39 @@
       "noFile": "업로드할 이미지를 먼저 선택해 주세요.",
       "invalidType": "이미지 파일만 업로드할 수 있습니다.",
       "saveFailed": "업로드 저장 중 문제가 발생했습니다.",
-      "analyzeFailed": "mock 분석 처리 중 문제가 발생했습니다.",
+      "analyzeFailed": "사진 분석 처리 중 문제가 발생했습니다.",
+      "analysisSaveFailed": "분석 결과 저장 중 문제가 발생했습니다.",
       "photoNotFound": "분석할 업로드 이미지가 필요합니다.",
       "unknown": "요청 처리 중 알 수 없는 문제가 발생했습니다."
     }
+  },
+  "shootingGuidePage": {
+    "shell": {
+      "badge": "Shooting Guide",
+      "title": "사진 찍기 전 빠르게 보는 촬영 가이드"
+    },
+    "title": "지금 찍으려는 사진에 맞춰 빠른 팁을 확인하세요",
+    "description": "업로드 없이 상황, 대상, 거리만 선택하면 바로 적용할 수 있는 촬영 팁을 보여줍니다.",
+    "categoryLabel": "상황 선택",
+    "subjectLabel": "대상 선택",
+    "distanceLabel": "거리 선택",
+    "tagLabel": "태그 선택",
+    "deviceLabel": "기기 선택",
+    "resultTitle": "빠른 팁",
+    "resultDescription": "선택한 상황, 대상, 거리에 맞춰 3~5개 카드만 제공합니다.",
+    "empty": "표시할 촬영 팁이 없습니다.",
+    "backToUpload": "사진 분석으로 이동",
+    "detailButton": "자세히 보기",
+    "collapseButton": "접기",
+    "detailLabel": "방법",
+    "whyLabel": "이유",
+    "whenLabel": "추천 상황",
+    "exampleLabel": "예시",
+    "settingLabel": "촬영 설정",
+    "copyDirectionLabel": "추천 문구 방향",
+    "focusLabel": "초점",
+    "lensLabel": "렌즈",
+    "phoneLabel": "기기 힌트"
   },
   "commerceGenerator": {
     "titleSuffix": "디지털 감성 포스터",
@@ -350,6 +575,125 @@
       "nature_healing": "힐링, 여유, 쉼, 회복",
       "travel_memory": "기억, 잔상, 그리움, 감성",
       "default": "공감, 위로, 생각"
+    }
+  },
+  "analysisStyleStrategies": {
+    "actionSpeed": {
+      "keywords": [
+        "속도",
+        "쾌감",
+        "제어",
+        "공격",
+        "가속",
+        "그립",
+        "라인",
+        "압도",
+        "폭발",
+        "심장"
+      ],
+      "phraseSets": {
+        "empathy": [
+          "멈출 생각 없어",
+          "이게 내가 사는 방식이다",
+          "끝까지 밀어붙인다",
+          "브레이크는 늦을수록 재밌다",
+          "선을 넘는 순간이 제일 좋다",
+          "제어는 했지만, 멈추진 않았다",
+          "지금 이 순간이 전부다",
+          "속도가 답인 날이 있다",
+          "속도 붙으면 심장부터 반응한다",
+          "라인 잡히는 순간 눈빛이 바뀐다",
+          "제어되는 속도는 그냥 쾌감이다",
+          "한계 붙는 장면은 몸이 먼저 안다",
+          "연기 올라오면 분위기부터 뒤집힌다",
+          "그립 끝까지 밀어붙이는 맛이 있다"
+        ],
+        "comfort": [
+          "오늘은 감성 말고 가속이다",
+          "브레이크보다 자신감이 먼저다",
+          "붙잡는 손에 힘이 다 들어간다",
+          "밀어붙일 때 제일 선명해진다",
+          "속도 앞에서는 말이 짧아진다",
+          "지금 필요한 건 각 잡힌 제어다",
+          "한 번 더 들어가면 된다",
+          "오늘은 끝까지 본다",
+          "느리게 갈 이유가 없다"
+        ],
+        "question": [
+          "이 장면 보고 심장 안 뛰냐?",
+          "이 정도 속도면 설명 끝난 거 아냐?",
+          "라인 저렇게 잡는데 눈 못 떼지?",
+          "쾌감이 이런 건데 더 말 필요 있나?",
+          "저 연기 보고 가만있을 수 있냐?",
+          "이건 그냥 달리는 맛 아니냐?",
+          "지금 브레이크 밟고 싶냐?",
+          "이쯤 되면 본능이 먼저 아니냐?"
+        ]
+      },
+      "phrasePatterns": {
+        "starts": [
+          "멈출 이유 ",
+          "끝까지 ",
+          "지금은 ",
+          "브레이크는 ",
+          "제어는 "
+        ],
+        "ends": [
+          "없다",
+          "밀어붙인다",
+          "속도가 답이다",
+          "늦을수록 재밌다",
+          "했지만 멈추진 않는다"
+        ]
+      },
+      "captionSets": {
+        "hook": [
+          "붙는 순간 분위기가 바뀐다",
+          "이건 감성보다 본능이다",
+          "속도는 눈으로만 보는 게 아니다",
+          "한 번 잡히면 끝까지 간다",
+          "심장부터 반응하는 장면이다",
+          "멈출 생각 없는 장면이다",
+          "선 넘는 맛이 살아 있다"
+        ],
+        "body": [
+          "라인 잡고 밀어붙이는 순간 제어랑 쾌감이 같이 올라온다",
+          "연기, 속도감, 손끝 제어가 한 장면에서 다 터진다",
+          "설명보다 빠른 건 몸 반응이다. 이건 그냥 바로 꽂힌다",
+          "공격적으로 들어가도 흐트러지지 않는 장면은 오래 남는다",
+          "브레이크 타이밍보다 더 강한 건 끝까지 버티는 집중력이다",
+          "드리프트든 레이싱이든 결국 남는 건 밀어붙이는 감각이다",
+          "속도, 제어, 공격성이 한 장면에서 동시에 살아난다"
+        ],
+        "close": [
+          "이 맛에 달린다",
+          "이건 그냥 세다",
+          "쾌감이 선명하다",
+          "속도가 답이다",
+          "설명 끝",
+          "오늘은 이거다",
+          "끝까지 간다"
+        ]
+      },
+      "promptRules": [
+        "action_speed 유형에서는 우울, 위로, 서정 문장을 금지한다.",
+        "문장은 짧고 강하게 쓴다.",
+        "번역체, 설명체, 애매한 시적 표현을 금지한다.",
+        "speed, freedom, intensity, control, thrill, aggression 감정만 사용한다.",
+        "드리프트, 레이싱, 모터스포츠 장면에서 실제 사람이 바로 내뱉을 법한 말투를 사용한다."
+      ],
+      "promptStyleExamples": [
+        "속도 붙으면 심장부터 반응한다",
+        "제어되는 속도는 그냥 쾌감이다",
+        "오늘은 감성 말고 가속이다",
+        "이 장면 보고 심장 안 뛰냐?",
+        "이건 그냥 달리는 맛 아니냐?"
+      ],
+      "promptCaptionExamples": [
+        "붙는 순간 분위기가 바뀐다\n라인 잡고 밀어붙이는 순간 제어랑 쾌감이 같이 올라온다\n이 맛에 달린다",
+        "이건 감성보다 본능이다\n연기, 속도감, 손끝 제어가 한 장면에서 다 터진다\n설명 끝",
+        "속도는 눈으로만 보는 게 아니다\n공격적으로 들어가도 흐트러지지 않는 장면은 오래 남는다\n이건 그냥 세다"
+      ]
     }
   },
   "historyPage": {

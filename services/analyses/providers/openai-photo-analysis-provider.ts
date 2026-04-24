@@ -2,7 +2,9 @@ import type { AnalysisGenerationInput, PhotoAnalysisProvider, PhotoAnalysisResul
 import { getOpenAiConfig } from "@/resources/config/openai";
 import { AiClientError } from "@/services/ai/ai-errors";
 import { OpenAiResponsesClient } from "@/services/ai/openai-responses-client";
+import { validateOpenAiImageAnalysisPayload } from "@/services/ai/openai-response-validators";
 import { buildOpenAiTextGenerationPrompt } from "@/services/analyses/prompts/build-openai-text-generation-prompt";
+import { buildOpenAiVisualAnalysisPrompt } from "@/services/analyses/prompts/build-openai-visual-analysis-prompt";
 import {
   buildCaptions,
   buildPhrases,
@@ -12,9 +14,13 @@ import {
   getPresetMatchSource,
   hashInput,
   normalizeSeedSource,
+  resolveAnalysisMetadata,
+  resolvePresetForPhotoStyle,
+  resolvePhotoStyleType,
   resolvePreset,
   uniqueByOrder,
 } from "@/services/analyses/providers/analysis-preset";
+import { resolveAnalysisImageReference } from "@/services/analyses/providers/analysis-image-source";
 
 const openAiTextSchema = {
   type: "object",
@@ -71,36 +77,64 @@ export class OpenAiPhotoAnalysisProvider implements PhotoAnalysisProvider {
     const seed = hashInput(normalizeSeedSource(input.originalName));
     const preset = resolvePreset(messages, input.originalName, seed);
     const presetMatchSource = getPresetMatchSource(messages, input.originalName);
-    const fallbackPhrases = buildPhrases(preset, seed);
-    const fallbackCaptions = buildCaptions(preset, seed);
+    const photoStyleType = resolvePhotoStyleType(preset, input.originalName);
+    let fallbackPreset = preset;
+    let fallbackPhrases = buildPhrases(fallbackPreset, seed, photoStyleType);
+    let fallbackCaptions = buildCaptions(fallbackPreset, seed, photoStyleType);
+    let fallbackMetadata = resolveAnalysisMetadata(fallbackPreset, photoStyleType, seed);
 
     if (!this.config.apiKey) {
       return {
         photoId: input.photoId,
-        scene_type: preset.scene_type,
-        mood_category: preset.mood_category,
-        short_review: preset.short_review,
-        long_review: preset.long_review,
-        recommended_text_position: preset.recommended_text_position,
-        wallpaper_score: preset.wallpaper_score,
-        social_score: preset.social_score,
-        commercial_score: preset.commercial_score,
-        phrases: buildScoredPhrases(fallbackPhrases, messages.scoring),
-        captions: buildScoredCaptions(fallbackCaptions, messages.scoring),
-        hashtags: preset.hashtags,
+        scene_type: fallbackMetadata.sceneType,
+        mood_category: fallbackMetadata.moodCategory,
+        photo_style_type: photoStyleType,
+        short_review: fallbackMetadata.shortReview,
+        long_review: fallbackMetadata.longReview,
+        recommended_text_position: fallbackMetadata.recommendedTextPosition,
+        wallpaper_score: fallbackMetadata.wallpaperScore,
+        social_score: fallbackMetadata.socialScore,
+        commercial_score: fallbackMetadata.commercialScore,
+        phrases: buildScoredPhrases(fallbackPhrases, messages.scoring, photoStyleType),
+        captions: buildScoredCaptions(fallbackCaptions, messages.scoring, photoStyleType),
+        hashtags: fallbackMetadata.hashtags,
         generation_source: "mock",
         generation_warning: "openAiKeyMissing",
       };
     }
 
     try {
+      const imageReference = await resolveAnalysisImageReference(input.filePath);
+      const visualPrompt = buildOpenAiVisualAnalysisPrompt({
+        originalName: input.originalName,
+      });
+      const visualResponse = await this.client.createStructuredResponse({
+        systemPrompt: visualPrompt.systemPrompt,
+        userPrompt: visualPrompt.userPrompt,
+        schemaName: visualPrompt.schemaName,
+        schema: visualPrompt.schema,
+        image: imageReference,
+        validate: validateOpenAiImageAnalysisPayload,
+      });
+
+      const analyzed = visualResponse.payload;
+      fallbackPreset = resolvePresetForPhotoStyle(messages, analyzed.photo_style_type, seed);
+      fallbackPhrases = buildPhrases(fallbackPreset, seed, analyzed.photo_style_type);
+      fallbackCaptions = buildCaptions(fallbackPreset, seed, analyzed.photo_style_type);
+      fallbackMetadata = resolveAnalysisMetadata(
+        fallbackPreset,
+        analyzed.photo_style_type,
+        seed,
+      );
+
+      const prompt = buildOpenAiTextGenerationPrompt({
+        originalName: input.originalName,
+        analysis: analyzed,
+      });
+
       const response = await this.client.createJsonResponse({
-        systemPrompt:
-          "Generate only short emotional Korean phrases and Instagram captions. Return valid JSON only.",
-        userPrompt: buildOpenAiTextGenerationPrompt({
-          originalName: input.originalName,
-          preset,
-        }),
+        systemPrompt: prompt.systemPrompt,
+        userPrompt: prompt.userPrompt,
         schemaName: "photo_copy_payload",
         schema: openAiTextSchema,
       });
@@ -117,19 +151,20 @@ export class OpenAiPhotoAnalysisProvider implements PhotoAnalysisProvider {
 
       return {
         photoId: input.photoId,
-        scene_type: preset.scene_type,
-        mood_category: preset.mood_category,
-        short_review: preset.short_review,
-        long_review: preset.long_review,
-        recommended_text_position: preset.recommended_text_position,
-        wallpaper_score: preset.wallpaper_score,
-        social_score: preset.social_score,
-        commercial_score: preset.commercial_score,
-        phrases: buildScoredPhrases(phrases, messages.scoring),
-        captions: buildScoredCaptions(captions, messages.scoring),
-        hashtags: preset.hashtags,
+        scene_type: analyzed.scene_type,
+        mood_category: analyzed.mood_category,
+        photo_style_type: analyzed.photo_style_type,
+        short_review: analyzed.short_review,
+        long_review: analyzed.long_review,
+        recommended_text_position: analyzed.recommended_text_position,
+        wallpaper_score: analyzed.wallpaper_score,
+        social_score: analyzed.social_score,
+        commercial_score: analyzed.commercial_score,
+        phrases: buildScoredPhrases(phrases, messages.scoring, analyzed.photo_style_type),
+        captions: buildScoredCaptions(captions, messages.scoring, analyzed.photo_style_type),
+        hashtags: analyzed.hashtags.length > 0 ? analyzed.hashtags : fallbackMetadata.hashtags,
         generation_source: "openai",
-        generation_warning: presetMatchSource === "fallback" ? "heuristicPreset" : null,
+        generation_warning: null,
       };
     } catch (error) {
       console.warn("[ai] OpenAI text generation fell back to mock", {
@@ -139,17 +174,18 @@ export class OpenAiPhotoAnalysisProvider implements PhotoAnalysisProvider {
 
       return {
         photoId: input.photoId,
-        scene_type: preset.scene_type,
-        mood_category: preset.mood_category,
-        short_review: preset.short_review,
-        long_review: preset.long_review,
-        recommended_text_position: preset.recommended_text_position,
-        wallpaper_score: preset.wallpaper_score,
-        social_score: preset.social_score,
-        commercial_score: preset.commercial_score,
-        phrases: buildScoredPhrases(fallbackPhrases, messages.scoring),
-        captions: buildScoredCaptions(fallbackCaptions, messages.scoring),
-        hashtags: preset.hashtags,
+        scene_type: fallbackMetadata.sceneType,
+        mood_category: fallbackMetadata.moodCategory,
+        photo_style_type: photoStyleType,
+        short_review: fallbackMetadata.shortReview,
+        long_review: fallbackMetadata.longReview,
+        recommended_text_position: fallbackMetadata.recommendedTextPosition,
+        wallpaper_score: fallbackMetadata.wallpaperScore,
+        social_score: fallbackMetadata.socialScore,
+        commercial_score: fallbackMetadata.commercialScore,
+        phrases: buildScoredPhrases(fallbackPhrases, messages.scoring, photoStyleType),
+        captions: buildScoredCaptions(fallbackCaptions, messages.scoring, photoStyleType),
+        hashtags: fallbackMetadata.hashtags,
         generation_source: "mock",
         generation_warning: "openAiFallbackToMock",
       };

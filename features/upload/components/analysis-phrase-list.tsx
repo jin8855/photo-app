@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { ScoredPhrase } from "@/lib/types/analysis";
+import type { PhotoStyleType, ScoredPhrase } from "@/lib/types/analysis";
 
 type AnalysisPhraseListProps = {
   title: string;
@@ -12,6 +12,7 @@ type AnalysisPhraseListProps = {
   copiedItem: string | null;
   onCopy: (value: string) => void;
   minHeight?: string;
+  photoStyleType?: PhotoStyleType;
 };
 
 export function AnalysisPhraseList({
@@ -25,26 +26,75 @@ export function AnalysisPhraseList({
   copiedItem,
   onCopy,
   minHeight,
+  photoStyleType,
 }: AnalysisPhraseListProps) {
+  const isActionLike =
+    photoStyleType === "action_speed" || photoStyleType === "sports_energy";
+  const isSoftLike =
+    photoStyleType === "spring_healing" ||
+    photoStyleType === "natural_healing" ||
+    photoStyleType === "travel_korean";
+  const isQuietLike =
+    photoStyleType === "emotional_landscape" ||
+    photoStyleType === "lonely_night" ||
+    photoStyleType === "reflective_fog" ||
+    photoStyleType === "urban_mood";
+
   return (
-    <section style={{ ...styles.section, ...(minHeight ? { minHeight } : null) }}>
+    <section
+      style={{
+        ...styles.section,
+        ...(minHeight ? { minHeight } : null),
+        ...(isActionLike ? styles.sectionAction : null),
+      }}
+    >
       <div style={styles.title}>{title}</div>
       {items.length === 0 ? (
         <div style={styles.empty}>{emptyLabel}</div>
       ) : (
         <ul style={styles.list}>
           {items.map((item, index) => (
-            <li key={`${item.phrase}-${index}`} style={styles.item}>
+            <li
+              key={`${item.phrase}-${index}`}
+              style={{
+                ...styles.item,
+                ...(isActionLike ? styles.itemAction : null),
+                ...(isSoftLike ? styles.itemSoft : null),
+                ...(isQuietLike ? styles.itemQuiet : null),
+                ...(isActionLike && index === 0 ? styles.itemActionLead : null),
+              }}
+            >
               <div style={styles.content}>
-                <span style={styles.text}>{item.phrase}</span>
+                <span
+                  style={{
+                    ...styles.text,
+                    ...(isActionLike ? styles.textAction : null),
+                    ...(isSoftLike ? styles.textSoft : null),
+                    ...(isQuietLike ? styles.textQuiet : null),
+                    ...(isActionLike && index === 0 ? styles.textActionLead : null),
+                  }}
+                >
+                  {item.phrase}
+                </span>
                 <div style={styles.metaRow}>
                   {scoreLabel && item.score > 0 ? (
-                    <span style={styles.scoreBadge}>
+                    <span
+                      style={{
+                        ...styles.scoreBadge,
+                        ...(isActionLike ? styles.scoreBadgeAction : null),
+                        ...(isSoftLike ? styles.scoreBadgeSoft : null),
+                      }}
+                    >
                       {scoreLabel} {item.score}
                     </span>
                   ) : null}
                   {reasonLabel && item.reason ? (
-                    <span style={styles.reasonText}>
+                    <span
+                      style={{
+                        ...styles.reasonText,
+                        ...(isActionLike ? styles.reasonTextAction : null),
+                      }}
+                    >
                       {reasonLabel} {item.reason}
                     </span>
                   ) : null}
@@ -71,6 +121,9 @@ const styles: Record<string, CSSProperties> = {
   section: {
     display: "grid",
     gap: "12px",
+  },
+  sectionAction: {
+    gap: "14px",
   },
   title: {
     fontWeight: 700,
@@ -105,6 +158,23 @@ const styles: Record<string, CSSProperties> = {
     background: "rgba(255, 255, 255, 0.72)",
     border: "1px solid rgba(64, 47, 30, 0.08)",
   },
+  itemAction: {
+    background: "linear-gradient(135deg, rgba(26, 20, 20, 0.96), rgba(79, 24, 24, 0.9), rgba(161, 45, 24, 0.84))",
+    border: "1px solid rgba(255, 125, 75, 0.24)",
+    boxShadow: "0 18px 36px rgba(79, 24, 24, 0.24)",
+  },
+  itemActionLead: {
+    padding: "16px 16px",
+    border: "1px solid rgba(255, 162, 86, 0.34)",
+  },
+  itemSoft: {
+    background: "linear-gradient(135deg, rgba(250, 247, 239, 0.98), rgba(242, 237, 220, 0.94))",
+    border: "1px solid rgba(126, 148, 119, 0.16)",
+  },
+  itemQuiet: {
+    background: "linear-gradient(135deg, rgba(250, 249, 246, 0.95), rgba(237, 234, 228, 0.92))",
+    border: "1px solid rgba(74, 69, 63, 0.08)",
+  },
   content: {
     display: "grid",
     gap: "8px",
@@ -115,6 +185,21 @@ const styles: Record<string, CSSProperties> = {
     color: "#2f2923",
     lineHeight: 1.6,
     wordBreak: "break-word",
+  },
+  textAction: {
+    color: "#fff4eb",
+    fontWeight: 700,
+    letterSpacing: "-0.02em",
+  },
+  textActionLead: {
+    fontSize: "20px",
+    lineHeight: 1.35,
+  },
+  textSoft: {
+    color: "#384a38",
+  },
+  textQuiet: {
+    color: "#2d2a26",
   },
   metaRow: {
     display: "flex",
@@ -132,10 +217,21 @@ const styles: Record<string, CSSProperties> = {
     fontSize: "12px",
     fontWeight: 700,
   },
+  scoreBadgeAction: {
+    background: "rgba(255, 226, 204, 0.16)",
+    color: "#ffd7ba",
+  },
+  scoreBadgeSoft: {
+    background: "rgba(112, 143, 104, 0.12)",
+    color: "#557052",
+  },
   reasonText: {
     fontSize: "12px",
     color: "#7b6f63",
     lineHeight: 1.4,
+  },
+  reasonTextAction: {
+    color: "rgba(255, 234, 219, 0.76)",
   },
   button: {
     flexShrink: 0,
