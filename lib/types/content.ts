@@ -59,6 +59,7 @@ export type ContentImageFitMode = "original" | "contain" | "cover";
 
 export type ContentFocusStyle = "none" | "center" | "manual";
 export type ContentFocusColorMode = "none" | "color-pop";
+export type ContentFocusEdge = "hard" | "soft";
 
 export type ContentFocusArea = {
   centerX: number;
@@ -86,10 +87,16 @@ export type ContentOverlayStyle = {
   imageFitMode?: ContentImageFitMode;
   focusStyle?: ContentFocusStyle;
   focusColorMode?: ContentFocusColorMode;
+  focusEdge?: ContentFocusEdge;
   focusArea?: ContentFocusArea;
   frameStyle?: ContentFrameStyle;
   frameText?: string;
   frameTextColor?: ContentFrameTextColor;
+  grainEnabled?: boolean;
+  grainIntensity?: number;
+  vignetteEnabled?: boolean;
+  vignetteIntensity?: number;
+  textHidden?: boolean;
   dateStampEnabled?: boolean;
   dateStampValue?: string;
   filmNumberEnabled?: boolean;

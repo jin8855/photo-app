@@ -1,5 +1,5 @@
 import type { CSSProperties, ChangeEvent, PointerEvent, RefObject } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import { AnalysisCaptionList } from "@/features/upload/components/analysis-caption-list";
@@ -145,8 +145,13 @@ export function AnalysisResultPanel({
   const [activePhotoStyleOption, setActivePhotoStyleOption] = useState("none");
   const [activeSpeechOption, setActiveSpeechOption] = useState("plain");
   const [activeEmotionOption, setActiveEmotionOption] = useState("comfort");
+  const [expandedBuiltInPresetKey, setExpandedBuiltInPresetKey] = useState<string | null>(null);
+  const [expandedComboPresetKey, setExpandedComboPresetKey] = useState<string | null>(null);
+  const [expandedFocusOptionKey, setExpandedFocusOptionKey] = useState<string | null>(null);
+  const [isManualFocusHelpExpanded, setIsManualFocusHelpExpanded] = useState(false);
   const [isDetailListExpanded, setIsDetailListExpanded] = useState(false);
   const [selectedPhotoTipCategory, setSelectedPhotoTipCategory] = useState<string | null>(null);
+  const [originalAspectRatio, setOriginalAspectRatio] = useState<number | null>(null);
   const pendingFocusAreaRef = useRef<Partial<ContentFocusArea> | null>(null);
   const focusAnimationFrameRef = useRef<number | null>(null);
   const activeTab =
@@ -183,11 +188,38 @@ export function AnalysisResultPanel({
   const activeRenderedPreviewContentSet = contentSet;
   const activeCompletePreviewContentSet = activeRenderedPreviewContentSet;
   const hasSavedCompletePreview = Boolean(completePreviewRenderState && completePreviewOverlayStyle);
+  const appliedCaptionText = completePreviewCaptionText ?? "";
+  const completePreviewGuideText = "변경하기에서 변경 저장을 누르면 이 탭에 적용된 결과가 보입니다.";
   const currentPreviewImageUrl = previewRenderState.imageUrl;
   const warningMessage =
     analysis.generation_warning && analysis.generation_warning in messages.warnings
       ? messages.warnings[analysis.generation_warning as keyof typeof messages.warnings]
       : null;
+
+  useEffect(() => {
+    let isActive = true;
+    const image = new Image();
+
+    image.onload = () => {
+      if (!isActive || image.naturalWidth === 0 || image.naturalHeight === 0) {
+        return;
+      }
+
+      setOriginalAspectRatio(image.naturalWidth / image.naturalHeight);
+    };
+
+    image.onerror = () => {
+      if (isActive) {
+        setOriginalAspectRatio(null);
+      }
+    };
+
+    image.src = uploaded.previewUrl;
+
+    return () => {
+      isActive = false;
+    };
+  }, [uploaded.previewUrl]);
   const hashtagBundle = analysis.hashtags.join(" ");
   const heroPhrase = analysis.phrases[0]?.phrase ?? analysis.short_review;
   const isActionLike =
@@ -345,6 +377,45 @@ export function AnalysisResultPanel({
     onChangeOverlayStyle({
       ...overlayStyle,
       frameTextColor,
+    });
+  };
+  const handleGrainEnabledChange = (checked: boolean) => {
+    onChangeOverlayStyle({
+      ...overlayStyle,
+      grainEnabled: checked,
+      grainIntensity: overlayStyle.grainIntensity ?? 0.12,
+    });
+  };
+  const handleGrainIntensityChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChangeOverlayStyle({
+      ...overlayStyle,
+      grainIntensity: Number(event.target.value),
+    });
+  };
+  const handleVignetteEnabledChange = (checked: boolean) => {
+    onChangeOverlayStyle({
+      ...overlayStyle,
+      vignetteEnabled: checked,
+      vignetteIntensity: overlayStyle.vignetteIntensity ?? 0.14,
+    });
+  };
+  const handleVignetteIntensityChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChangeOverlayStyle({
+      ...overlayStyle,
+      vignetteIntensity: Number(event.target.value),
+    });
+  };
+  const handleFocusEdgeChange = (focusEdge: NonNullable<ContentOverlayStyle["focusEdge"]>) => {
+    onChangeOverlayStyle({
+      ...overlayStyle,
+      focusEdge,
+    });
+  };
+
+  const handleTextHiddenChange = (textHidden: boolean) => {
+    onChangeOverlayStyle({
+      ...overlayStyle,
+      textHidden,
     });
   };
 
@@ -599,6 +670,74 @@ export function AnalysisResultPanel({
     }
 
     return "#f7f4ee";
+  };
+  const resolvePreviewSurfaceBackground = (
+    currentFrameStyle: ContentFrameStyle,
+    currentStyle: ContentOverlayStyle = overlayStyle,
+  ) => {
+    if (currentFrameStyle === "polaroid") {
+      return "#fffaf3";
+    }
+
+    if (currentFrameStyle === "minimal") {
+      return "#f5f3ef";
+    }
+
+    if (currentFrameStyle === "vintageFilmBorder") {
+      return "#f4eee3";
+    }
+
+    if (currentFrameStyle === "cinemaFilm") {
+      return currentStyle.imageFilter === "black_and_white" ? "#f1eee7" : "#f4eee3";
+    }
+
+    return resolvePreviewMatBackground(currentStyle);
+  };
+  const resolvePreviewGrainOpacity = (currentStyle: ContentOverlayStyle) => {
+    if (currentStyle.grainEnabled !== true) {
+      return 0;
+    }
+
+    return Math.min(0.22, Math.max(0.05, currentStyle.grainIntensity ?? 0.12));
+  };
+  const resolvePreviewVignetteBackground = (
+    currentRenderConfig: typeof renderConfig,
+    focusStyle: typeof renderConfig.focusStyle,
+    currentStyle: ContentOverlayStyle,
+  ) => {
+    if (currentStyle.vignetteEnabled !== true && focusStyle === "none") {
+      return "none";
+    }
+
+    const vignetteOpacity = Math.min(
+      0.26,
+      Math.max(
+        0.08,
+        currentStyle.vignetteEnabled === true
+          ? currentStyle.vignetteIntensity ?? 0.14
+          : currentRenderConfig.params.vignette + (focusStyle !== "none" ? 0.05 : 0),
+      ),
+    );
+
+    return `radial-gradient(circle at center, rgba(19,16,13,0) 52%, rgba(19,16,13,${(
+      vignetteOpacity * 0.72
+    ).toFixed(3)}) 78%, rgba(19,16,13,${vignetteOpacity.toFixed(3)}) 100%)`;
+  };
+  const resolvePreviewFocusMaskBackground = (
+    focusArea: ContentFocusArea,
+    focusEdge: ContentOverlayStyle["focusEdge"],
+  ) => {
+    const centerX = (focusArea.centerX * 100).toFixed(2);
+    const centerY = (focusArea.centerY * 100).toFixed(2);
+    const isSoftEdge = (focusEdge ?? "soft") === "soft";
+    const clearRadius = Math.max(12, focusArea.radius * (isSoftEdge ? 62 : 56));
+    const featherRadius = Math.min(98, clearRadius + (isSoftEdge ? 22 : 10));
+    const edgeOpacity = isSoftEdge ? 0.3 : 0.38;
+    const middleOpacity = isSoftEdge ? 0.14 : 0.22;
+
+    return `radial-gradient(circle at ${centerX}% ${centerY}%, rgba(19,16,13,0) 0%, rgba(19,16,13,0) ${clearRadius.toFixed(
+      2,
+    )}%, rgba(19,16,13,${middleOpacity}) ${featherRadius.toFixed(2)}%, rgba(19,16,13,${edgeOpacity}) 100%)`;
   };
   const resolvePreviewPhotoWindowStyle = (currentFrameStyle: ContentFrameStyle): CSSProperties => {
     if (currentFrameStyle === "vintageFilmBorder") {
@@ -1378,6 +1517,21 @@ export function AnalysisResultPanel({
       label: messages.instagram.imageFitModeLabels.cover,
     },
   ];
+  const focusEdgeOptions: Array<{
+    key: NonNullable<ContentOverlayStyle["focusEdge"]>;
+    label: string;
+  }> = [
+    {
+      key: "hard",
+      label: messages.instagram.focusEdgeHard,
+    },
+    {
+      key: "soft",
+      label: messages.instagram.focusEdgeSoft,
+    },
+  ];
+  const grainIntensityValue = overlayStyle.grainIntensity ?? 0.12;
+  const vignetteIntensityValue = overlayStyle.vignetteIntensity ?? 0.14;
 
   const speechOptions = [
     {
@@ -1437,7 +1591,7 @@ export function AnalysisResultPanel({
   ) => {
     const layout = options?.layout ?? previewRenderState;
     const previewStyle = options?.style ?? overlayStyle;
-    const previewCaptionText = options?.captionText ?? layout.captionText;
+    const previewOverlayText = options?.captionText ?? layout.captionText;
     const localRenderConfig = {
       ...buildRenderConfig(previewStyle),
       focusStyle: layout.focus,
@@ -1450,6 +1604,8 @@ export function AnalysisResultPanel({
       : null;
     const localImageFitMode = layout.fit;
     const isOriginalFitMode = localImageFitMode === "original";
+    const resolvedPreviewAspectRatio =
+      isOriginalFitMode ? originalAspectRatio ?? undefined : localOutputFormat?.cssAspectRatio;
     const localFrameStyle = layout.frameStyle;
     const localFrameTextColor = layout.frameTextColor;
     const localCurrentPreviewImageUrl = layout.imageUrl;
@@ -1468,6 +1624,8 @@ export function AnalysisResultPanel({
     const localIsCinemaFilmFrameStyle = localFrameStyle === "cinemaFilm";
     const localIsPolaroidFrameStyle = localFrameStyle === "polaroid";
     const localIsMinimalFrameStyle = localFrameStyle === "minimal";
+    const localPreviewSurfaceBackground = resolvePreviewSurfaceBackground(localFrameStyle, previewStyle);
+    const localGrainOpacity = resolvePreviewGrainOpacity(previewStyle);
 
     if (isOriginalFitMode && localFrameStyle === "none") {
       return (
@@ -1479,7 +1637,7 @@ export function AnalysisResultPanel({
             minHeight: 0,
             maxHeight: "none",
             padding: 0,
-            background: "transparent",
+            background: localPreviewSurfaceBackground,
           }}
         >
           <div style={{ position: "relative", width: "100%", overflow: "hidden", borderRadius: "16px" }}>
@@ -1503,7 +1661,19 @@ export function AnalysisResultPanel({
                   objectFit: "contain",
                   objectPosition: "center top",
                   clipPath: resolvePreviewFocusClipPath(localRenderConfig.focusArea),
-                  filter: resolvePreviewFocusImageFilter(previewStyle.imageFilter),
+                filter: resolvePreviewFocusImageFilter(previewStyle.imageFilter),
+              }}
+            />
+            ) : null}
+            {localIsFocusStyle ? (
+              <div
+                aria-hidden="true"
+                style={{
+                  ...styles.livePreviewFocusMask,
+                  background: resolvePreviewFocusMaskBackground(
+                    localRenderConfig.focusArea,
+                    previewStyle.focusEdge,
+                  ),
                 }}
               />
             ) : null}
@@ -1529,27 +1699,48 @@ export function AnalysisResultPanel({
               }}
             />
             <div
+              aria-hidden="true"
               style={{
-                ...styles.livePreviewText,
-                fontFamily: resolvePreviewFontFamily(previewStyle.fontFamily),
-                fontSize: resolvePreviewFontSize(previewStyle.fontSize),
-                fontWeight: resolvePreviewFontWeight(previewStyle.fontWeight),
-                color: resolvePreviewTextColor(previewStyle.textColor),
-                background: resolvePreviewBackground(previewStyle.background),
-                textShadow: resolvePreviewTextShadow(previewStyle.shadow),
-                lineHeight:
-                  previewStyle.lineHeight === "tight"
-                    ? 1.15
-                    : previewStyle.lineHeight === "relaxed"
-                      ? 1.55
-                      : 1.35,
-                transform: `translate(${previewStyle.xOffset / 6}px, ${previewStyle.yOffset / 6}px)`,
-                justifyContent: resolvePreviewJustify(previewStyle.position),
-                ...resolvePreviewAlignment(previewStyle.position),
+                ...styles.livePreviewVignette,
+                background: resolvePreviewVignetteBackground(
+                  localRenderConfig as typeof renderConfig,
+                  localRenderConfig.focusStyle,
+                  previewStyle,
+                ),
               }}
-            >
-              {previewCaptionText}
-            </div>
+            />
+            {localGrainOpacity > 0 ? (
+              <div
+                aria-hidden="true"
+                style={{
+                  ...styles.livePreviewGrain,
+                  opacity: localGrainOpacity,
+                }}
+              />
+            ) : null}
+            {!previewStyle.textHidden && previewOverlayText ? (
+              <div
+                style={{
+                  ...styles.livePreviewText,
+                  fontFamily: resolvePreviewFontFamily(previewStyle.fontFamily),
+                  fontSize: resolvePreviewFontSize(previewStyle.fontSize),
+                  fontWeight: resolvePreviewFontWeight(previewStyle.fontWeight),
+                  color: resolvePreviewTextColor(previewStyle.textColor),
+                  background: resolvePreviewBackground(previewStyle.background),
+                  textShadow: resolvePreviewTextShadow(previewStyle.shadow),
+                  lineHeight:
+                    previewStyle.lineHeight === "tight"
+                      ? 1.15
+                      : previewStyle.lineHeight === "relaxed"
+                        ? 1.55
+                        : 1.35,
+                  ...resolveHeroOverlayPlacement(previewStyle.position),
+                  transform: `${resolveHeroOverlayPlacement(previewStyle.position).transform ?? ""} translate(${previewStyle.xOffset / 6}px, ${previewStyle.yOffset / 6}px)`.trim(),
+                }}
+              >
+                {previewOverlayText}
+              </div>
+            ) : null}
           </div>
         </div>
       );
@@ -1559,13 +1750,11 @@ export function AnalysisResultPanel({
         <div
           style={{
             ...styles.livePreviewFrame,
-            aspectRatio: localOutputFormat?.cssAspectRatio,
+            aspectRatio: resolvedPreviewAspectRatio,
             width: localOutputFormat ? resolvePreviewFrameWidth(localSelectedAspectRatio ?? undefined) : "min(100%, 520px)",
-            maxHeight: "none",
-            background:
-              localImageFitMode === "contain"
-              ? resolvePreviewMatBackground()
-              : styles.livePreviewFrame.background,
+            minHeight: isOriginalFitMode ? undefined : styles.livePreviewFrame.minHeight,
+            maxHeight: isOriginalFitMode ? "min(72vh, 560px)" : "none",
+            background: localPreviewSurfaceBackground,
         }}
       >
         <div style={resolvePreviewPhotoWindowStyle(localFrameStyle)}>
@@ -1597,6 +1786,18 @@ export function AnalysisResultPanel({
               }}
             />
           ) : null}
+          {localIsFocusStyle ? (
+            <div
+              aria-hidden="true"
+              style={{
+                ...styles.livePreviewFocusMask,
+                background: resolvePreviewFocusMaskBackground(
+                  localRenderConfig.focusArea,
+                  previewStyle.focusEdge,
+                ),
+              }}
+            />
+          ) : null}
           {interactive && localIsManualFocusStyle ? (
           <div
             aria-hidden="true"
@@ -1619,27 +1820,48 @@ export function AnalysisResultPanel({
             }}
           />
           <div
+            aria-hidden="true"
             style={{
-              ...styles.livePreviewText,
-              fontFamily: resolvePreviewFontFamily(previewStyle.fontFamily),
-              fontSize: resolvePreviewFontSize(previewStyle.fontSize),
-              fontWeight: resolvePreviewFontWeight(previewStyle.fontWeight),
-              color: resolvePreviewTextColor(previewStyle.textColor),
-              background: resolvePreviewBackground(previewStyle.background),
-              textShadow: resolvePreviewTextShadow(previewStyle.shadow),
-              lineHeight:
-                previewStyle.lineHeight === "tight"
-                  ? 1.15
-                  : previewStyle.lineHeight === "relaxed"
-                    ? 1.55
-                    : 1.35,
-              transform: `translate(${previewStyle.xOffset / 6}px, ${previewStyle.yOffset / 6}px)`,
-              justifyContent: resolvePreviewJustify(previewStyle.position),
-              ...resolvePreviewAlignment(previewStyle.position),
+              ...styles.livePreviewVignette,
+              background: resolvePreviewVignetteBackground(
+                localRenderConfig as typeof renderConfig,
+                localRenderConfig.focusStyle,
+                previewStyle,
+              ),
             }}
-          >
-            {previewCaptionText}
-          </div>
+          />
+          {localGrainOpacity > 0 ? (
+            <div
+              aria-hidden="true"
+              style={{
+                ...styles.livePreviewGrain,
+                opacity: localGrainOpacity,
+              }}
+            />
+          ) : null}
+          {!previewStyle.textHidden && previewOverlayText ? (
+            <div
+              style={{
+                ...styles.livePreviewText,
+                fontFamily: resolvePreviewFontFamily(previewStyle.fontFamily),
+                fontSize: resolvePreviewFontSize(previewStyle.fontSize),
+                fontWeight: resolvePreviewFontWeight(previewStyle.fontWeight),
+                color: resolvePreviewTextColor(previewStyle.textColor),
+                background: resolvePreviewBackground(previewStyle.background),
+                textShadow: resolvePreviewTextShadow(previewStyle.shadow),
+                lineHeight:
+                  previewStyle.lineHeight === "tight"
+                    ? 1.15
+                    : previewStyle.lineHeight === "relaxed"
+                      ? 1.55
+                      : 1.35,
+                ...resolveHeroOverlayPlacement(previewStyle.position),
+                transform: `${resolveHeroOverlayPlacement(previewStyle.position).transform ?? ""} translate(${previewStyle.xOffset / 6}px, ${previewStyle.yOffset / 6}px)`.trim(),
+              }}
+            >
+              {previewOverlayText}
+            </div>
+          ) : null}
         </div>
         {localIsVintageFilmFrameStyle ? (
         <div style={styles.livePreviewFilmFrame} aria-hidden="true">
@@ -1744,22 +1966,34 @@ export function AnalysisResultPanel({
           <div style={styles.sourceBadge}>{sourceLabel}</div>
           {warningMessage ? <div style={styles.warningBadge}>{warningMessage}</div> : null}
         </div>
-        <h2 style={styles.title}>{panelTitle}</h2>
-        <p style={styles.description}>{panelDescription}</p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "16px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "grid", gap: "10px", minWidth: 0 }}>
+            <h2 style={styles.title}>{panelTitle}</h2>
+            <p style={styles.description}>{panelDescription}</p>
+          </div>
+          {activeTab === "captions" ? (
+            <button
+              type="button"
+              style={styles.editSaveButton}
+              onClick={onSaveEditPreview}
+            >
+              {messages.resultSections.editSaveButton}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {activeTab === "review" ? (
         <div style={styles.reviewPanel}>
           <section style={styles.resultStage}>
-            <div style={styles.resultStageHeader}>
-              <div>
-                <div style={styles.resultStageTitle}>{messages.resultSections.analysisResultTitle}</div>
-                <p style={styles.resultStageDescription}>
-                  {messages.resultSections.analysisResultDescription}
-                </p>
-              </div>
-            </div>
-
             <section
               style={{
                 ...styles.mainContentResultCard,
@@ -1922,10 +2156,121 @@ export function AnalysisResultPanel({
                     </div>
                   </div>
                   <div style={styles.contentSetBlock}>
-                    <div style={styles.contentSetText}>
-                      {isGeneratingContentSet
-                        ? messages.instagram.contentSetCreating
-                        : messages.instagram.contentSetCreate}
+                    <div
+                      style={{
+                        ...styles.currentSelectionCard,
+                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                      }}
+                    >
+                      <div
+                        style={{
+                          ...styles.contentSetLabel,
+                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                        }}
+                      >
+                        {messages.cta.currentPhrase}
+                      </div>
+                      <div
+                        style={{
+                          ...styles.currentSelectionText,
+                          ...(isActionLike ? styles.currentSelectionTextAction : null),
+                          ...(isSoftLike ? styles.currentSelectionTextSoft : null),
+                          ...(isQuietLike ? styles.currentSelectionTextQuiet : null),
+                        }}
+                      >
+                        {selectedOverlayText}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        ...styles.currentSelectionCard,
+                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                      }}
+                    >
+                      <div
+                        style={{
+                          ...styles.contentSetLabel,
+                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                        }}
+                      >
+                        {messages.cta.currentCaption}
+                      </div>
+                      <div
+                        style={{
+                          ...styles.currentSelectionSubtext,
+                          ...(isActionLike ? styles.currentSelectionSubtextAction : null),
+                        }}
+                      >
+                        {selectedCaptionText}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        ...styles.currentSelectionCard,
+                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                      }}
+                    >
+                      <div
+                        style={{
+                          ...styles.contentSetLabel,
+                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                        }}
+                      >
+                        {messages.instagram.contentSetHashtagLabel}
+                      </div>
+                      <div
+                        style={{
+                          ...styles.currentSelectionSubtext,
+                          ...(isActionLike ? styles.currentSelectionSubtextAction : null),
+                        }}
+                      >
+                        {hashtagBundle}
+                      </div>
+                    </div>
+                    <div style={styles.reviewActionHintCard}>
+                      <div style={styles.reviewActionHintTitle}>
+                        {isGeneratingContentSet
+                          ? messages.instagram.contentSetCreating
+                          : messages.resultSections.generateActionTitle}
+                      </div>
+                      <div style={styles.reviewActionHintText}>
+                        {messages.resultSections.generateActionDescription}
+                      </div>
+                    </div>
+                    <div style={styles.primaryActionGrid}>
+                      <button
+                        type="button"
+                        style={styles.primaryActionButton}
+                        onClick={onGenerateContentSet}
+                        disabled={isGeneratingContentSet}
+                      >
+                        {isGeneratingContentSet
+                          ? messages.instagram.contentSetCreating
+                          : messages.instagram.contentSetCreate}
+                      </button>
+                      <button
+                        type="button"
+                        style={styles.primaryActionButton}
+                        onClick={() => setActiveTab("captions")}
+                      >
+                        {messages.resultSections.stepEditLabel}
+                      </button>
+                      <button
+                        type="button"
+                        style={styles.primaryActionButton}
+                        onClick={() => setActiveTab("complete")}
+                      >
+                        {messages.resultSections.stepCompleteLabel}
+                      </button>
+                    </div>
+                    <div style={styles.secondaryActionRow}>
+                      <button
+                        type="button"
+                        style={styles.secondaryActionButton}
+                        onClick={() => onCopy(`${selectedCaptionText}\n\n${hashtagBundle}`)}
+                      >
+                        {messages.instagram.contentSetTextCopy}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2176,8 +2521,8 @@ export function AnalysisResultPanel({
                 <button
                   type="button"
                   style={styles.instagramButton}
-                  onClick={() => onCopy(selectedCaptionText)}
-                  disabled={!selectedCaptionText}
+                  onClick={() => onCopy(appliedCaptionText)}
+                  disabled={!hasSavedCompletePreview || !appliedCaptionText}
                 >
                   {messages.instagram.captionCopy}
                 </button>
@@ -2231,7 +2576,7 @@ export function AnalysisResultPanel({
               </div>
             ) : (
               <div style={styles.contentSetText}>
-                {messages.resultSections.editSaveButton}
+                {completePreviewGuideText}
               </div>
             )}
           </section>
@@ -2330,19 +2675,6 @@ export function AnalysisResultPanel({
         {activeTab === "captions" ? (
           <div style={styles.tabStack}>
             <section style={styles.contentSetCard}>
-              <div style={styles.resultStageHeader}>
-                <div>
-                  <div style={styles.resultStageTitle}>{messages.resultSections.stepEditLabel}</div>
-                  <p style={styles.resultStageDescription}>{messages.resultSections.editDescription}</p>
-                </div>
-                <button
-                  type="button"
-                  style={styles.editSaveButton}
-                  onClick={onSaveEditPreview}
-                >
-                  {messages.resultSections.editSaveButton}
-                </button>
-              </div>
               <div style={styles.editWorkspace}>
                 <section style={styles.previewColumn}>
                   <section style={styles.livePreviewCard}>
@@ -2376,200 +2708,133 @@ export function AnalysisResultPanel({
 
                 {activeEditTab === "photo" ? (
                   <div style={styles.customizeSection}>
-                    <section style={styles.editGroupCard}>
-                      <div style={styles.quickControlGroup}>
-                        <div style={styles.contentSetLabel}>{messages.resultSections.toneTitle}</div>
-                        <div style={styles.quickOptionRow}>
-                          {moodOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              type="button"
-                              style={{
-                                ...styles.quickOptionButton,
-                                ...(activeMoodOption === option.key ? styles.quickOptionButtonActive : null),
-                              }}
-                              aria-pressed={activeMoodOption === option.key}
-                              onClick={() => {
-                                setActiveMoodOption(option.key);
-                                onChangeOverlayStyle({ ...overlayStyle, ...option.style });
-                              }}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
+                    <div style={styles.photoPresetTopGrid}>
+                      <section style={styles.editGroupCard}>
+                        <div style={styles.presetHeaderRow}>
+                          <div style={styles.contentSetLabel}>{messages.instagram.presetSectionTitle}</div>
                         </div>
-                      </div>
-                      <div style={styles.quickControlGroup}>
-                        <div style={styles.contentSetLabel}>{messages.instagram.imageFilterLabel}</div>
-                        <div style={styles.quickOptionRow}>
-                          {photoStyleOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              type="button"
-                              style={{
-                                ...styles.quickOptionButton,
-                                ...(activePhotoStyleOption === option.key ? styles.quickOptionButtonActive : null),
-                              }}
-                              aria-pressed={activePhotoStyleOption === option.key}
-                              onClick={() => {
-                                setActivePhotoStyleOption(option.key);
-                                onChangeOverlayStyle({ ...overlayStyle, ...option.style });
-                              }}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
+                        <div style={styles.presetButtons}>
+                          {builtInPresets.map((item) => {
+                            const isSelectedPreset = isSameOverlayStyle(item.style);
+                            const isExpandedPreset = expandedBuiltInPresetKey === item.key;
+
+                            return (
+                              <div
+                                key={item.key}
+                                style={{
+                                  ...styles.presetCardButton,
+                                  ...(isSelectedPreset ? styles.presetCardButtonSelected : null),
+                                }}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => onApplyOverlayPreset(item.key)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    onApplyOverlayPreset(item.key);
+                                  }
+                                }}
+                              >
+                                <span style={styles.presetCardTopLine}>
+                                  <span style={styles.presetCardName}>{item.label}</span>
+                                  {isSelectedPreset ? (
+                                    <span style={styles.presetSelectedBadge}>
+                                      {messages.instagram.selectedPresetBadge}
+                                    </span>
+                                  ) : null}
+                                  <button
+                                    type="button"
+                                    style={styles.presetInfoButton}
+                                    aria-expanded={isExpandedPreset}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      setExpandedBuiltInPresetKey((current) =>
+                                        current === item.key ? null : item.key,
+                                      );
+                                    }}
+                                  >
+                                    ?
+                                  </button>
+                                </span>
+                                <div
+                                  style={{
+                                    ...styles.presetCardDetail,
+                                    ...(isExpandedPreset ? styles.presetCardDetailExpanded : null),
+                                  }}
+                                >
+                                  <span style={styles.presetCardDescription}>{item.description}</span>
+                                  <span style={styles.presetCardMeta}>{resolvePresetBadgeText(item.style)}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
-                      <div style={styles.quickControlGroup}>
-                        <div style={styles.contentSetLabel}>{messages.instagram.aspectRatioLabel}</div>
-                        <div style={styles.quickOptionRow}>
-                          {aspectRatioOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              type="button"
-                              style={{
-                                ...styles.quickOptionButton,
-                                ...(selectedAspectRatio === option.key ? styles.quickOptionButtonActive : null),
-                                ...(imageFitMode === "original" ? styles.quickOptionButtonDisabled : null),
-                              }}
-                              aria-pressed={selectedAspectRatio === option.key}
-                              disabled={imageFitMode === "original"}
-                              onClick={() => onChangeOverlayStyle({ ...overlayStyle, aspectRatio: option.key })}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
+                      </section>
+
+                      <section style={styles.editGroupCard}>
+                        <div style={styles.presetHeaderRow}>
+                          <div style={styles.contentSetLabel}>{messages.instagram.comboPresetSectionTitle}</div>
                         </div>
-                      </div>
-                      <div style={styles.quickControlGroup}>
-                        <div style={styles.contentSetLabel}>{messages.instagram.imageFitModeLabel}</div>
-                        <div style={styles.quickOptionRow}>
-                          {imageFitModeOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              type="button"
-                              style={{
-                                ...styles.quickOptionButton,
-                                ...(imageFitMode === option.key ? styles.quickOptionButtonActive : null),
-                              }}
-                              aria-pressed={imageFitMode === option.key}
-                              onClick={() => onChangeOverlayStyle({ ...overlayStyle, imageFitMode: option.key })}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
+                        <div style={styles.presetButtons}>
+                          {comboPresets.map((item) => {
+                            const isSelectedPreset = isSamePartialOverlayStyle(item.style);
+                            const isExpandedPreset = expandedComboPresetKey === item.key;
+
+                            return (
+                              <div
+                                key={item.key}
+                                style={{
+                                  ...styles.presetCardButton,
+                                  ...(isSelectedPreset ? styles.presetCardButtonSelected : null),
+                                }}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...item.style })}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    onChangeOverlayStyle({ ...overlayStyle, ...item.style });
+                                  }
+                                }}
+                              >
+                                <span style={styles.presetCardTopLine}>
+                                  <span style={styles.presetCardName}>{item.label}</span>
+                                  {isSelectedPreset ? (
+                                    <span style={styles.presetSelectedBadge}>
+                                      {messages.instagram.selectedPresetBadge}
+                                    </span>
+                                  ) : null}
+                                  <button
+                                    type="button"
+                                    style={styles.presetInfoButton}
+                                    aria-expanded={isExpandedPreset}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      setExpandedComboPresetKey((current) =>
+                                        current === item.key ? null : item.key,
+                                      );
+                                    }}
+                                  >
+                                    ?
+                                  </button>
+                                </span>
+                                <div
+                                  style={{
+                                    ...styles.presetCardDetail,
+                                    ...(isExpandedPreset ? styles.presetCardDetailExpanded : null),
+                                  }}
+                                >
+                                  <span style={styles.presetCardDescription}>{item.description}</span>
+                                  <span style={styles.presetCardMeta}>
+                                    {item.style.frameStyle ?? "none"} · {item.style.cameraStyle ?? "none"}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
-                      <div style={styles.quickControlGroup}>
-                        <div style={styles.contentSetLabel}>{messages.instagram.cameraStyleLabel}</div>
-                        <div style={styles.quickOptionRow}>
-                          {cameraStyleOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              type="button"
-                              style={{
-                                ...styles.quickOptionButton,
-                                ...((overlayStyle.cameraStyle ?? "none") === option.key
-                                  ? styles.quickOptionButtonActive
-                                  : null),
-                              }}
-                              aria-pressed={(overlayStyle.cameraStyle ?? "none") === option.key}
-                              onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...option.style })}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div style={styles.quickControlGroup}>
-                        <div style={styles.contentSetLabel}>{messages.instagram.frameStyleLabel}</div>
-                        <div style={styles.quickOptionRow}>
-                          {frameStyleOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              type="button"
-                              style={{
-                                ...styles.quickOptionButton,
-                                ...(frameStyle === option.key ? styles.quickOptionButtonActive : null),
-                              }}
-                              aria-pressed={frameStyle === option.key}
-                              onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...option.style })}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div style={styles.quickControlGroup}>
-                        <div style={styles.contentSetLabel}>{messages.instagram.focusStyleLabel}</div>
-                        <div style={styles.quickOptionRow}>
-                          {focusStyleOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              type="button"
-                              style={{
-                                ...styles.quickOptionButton,
-                                ...(renderConfig.focusStyle === option.key
-                                  ? styles.quickOptionButtonActive
-                                  : null),
-                              }}
-                              aria-pressed={renderConfig.focusStyle === option.key}
-                              onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...option.style })}
-                            >
-                              <span>{option.label}</span>
-                              <span style={styles.quickOptionDescription}>{option.description}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      {isManualFocusStyle ? (
-                        <div style={styles.manualFocusPanel}>
-                          <label style={styles.selectField}>
-                            <span style={styles.contentSetLabel}>{messages.instagram.manualFocusRadiusLabel}</span>
-                            <input
-                              type="range"
-                              min="0.15"
-                              max="0.5"
-                              step="0.01"
-                              value={renderConfig.focusArea.radius}
-                              onChange={handleManualFocusRadiusChange}
-                              style={styles.range}
-                            />
-                            <span style={styles.manualFocusRangeHint}>
-                              <span>{messages.instagram.manualFocusNarrowLabel}</span>
-                              <span>{messages.instagram.manualFocusWideLabel}</span>
-                            </span>
-                          </label>
-                          <p style={styles.manualFocusHelp}>{messages.instagram.manualFocusHelp}</p>
-                          {renderConfig.toneStyle === "bw" ? (
-                            <label style={styles.manualFocusCheckbox}>
-                              <input
-                                type="checkbox"
-                                checked={overlayStyle.focusColorMode === "color-pop"}
-                                onChange={(event) =>
-                                  onChangeOverlayStyle({
-                                    ...overlayStyle,
-                                    focusColorMode: event.target.checked ? "color-pop" : "none",
-                                  })
-                                }
-                              />
-                              <span style={styles.manualFocusCheckboxText}>
-                                <strong>{messages.instagram.colorFocusLabel}</strong>
-                                <small>{messages.instagram.colorFocusHelp}</small>
-                              </span>
-                            </label>
-                          ) : null}
-                          <button
-                            type="button"
-                            style={styles.manualFocusResetButton}
-                            onClick={() => updateManualFocusArea(DEFAULT_FOCUS_AREA)}
-                          >
-                            {messages.instagram.manualFocusResetButton}
-                          </button>
-                        </div>
-                      ) : null}
-                    </section>
+                      </section>
+                    </div>
                   </div>
                 ) : null}
 
@@ -2636,72 +2901,261 @@ export function AnalysisResultPanel({
               <section style={styles.editBottomPanel}>
                 <div style={styles.editBottomGrid}>
                   <section style={styles.editGroupCard}>
-                    <div style={styles.presetHeaderRow}>
-                      <div style={styles.contentSetLabel}>{messages.instagram.presetSectionTitle}</div>
-                    </div>
-                    <div style={styles.presetButtons}>
-                      {builtInPresets.map((item) => {
-                        const isSelectedPreset = isSameOverlayStyle(item.style);
-
-                        return (
+                    <div style={styles.quickControlGroup}>
+                      <div style={styles.contentSetLabel}>{messages.resultSections.toneTitle}</div>
+                      <div style={styles.quickOptionRow}>
+                        {moodOptions.map((option) => (
                           <button
-                            key={item.key}
+                            key={option.key}
                             type="button"
                             style={{
-                              ...styles.presetCardButton,
-                              ...(isSelectedPreset ? styles.presetCardButtonSelected : null),
+                              ...styles.quickOptionButton,
+                              ...(activeMoodOption === option.key ? styles.quickOptionButtonActive : null),
                             }}
-                            aria-pressed={isSelectedPreset}
-                            onClick={() => onApplyOverlayPreset(item.key)}
+                            aria-pressed={activeMoodOption === option.key}
+                            onClick={() => {
+                              setActiveMoodOption(option.key);
+                              onChangeOverlayStyle({ ...overlayStyle, ...option.style });
+                            }}
                           >
-                            <span style={styles.presetCardTopLine}>
-                              <span style={styles.presetCardName}>{item.label}</span>
-                              {isSelectedPreset ? (
-                                <span style={styles.presetSelectedBadge}>
-                                  {messages.instagram.selectedPresetBadge}
-                                </span>
-                              ) : null}
-                            </span>
-                            <span style={styles.presetCardDescription}>{item.description}</span>
-                            <span style={styles.presetCardMeta}>{resolvePresetBadgeText(item.style)}</span>
+                            {option.label}
                           </button>
-                        );
-                      })}
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.quickControlGroup}>
+                      <div style={styles.contentSetLabel}>{messages.instagram.imageFilterLabel}</div>
+                      <div style={styles.quickOptionRow}>
+                        {photoStyleOptions.map((option) => (
+                          <button
+                            key={option.key}
+                            type="button"
+                            style={{
+                              ...styles.quickOptionButton,
+                              ...(activePhotoStyleOption === option.key ? styles.quickOptionButtonActive : null),
+                            }}
+                            aria-pressed={activePhotoStyleOption === option.key}
+                            onClick={() => {
+                              setActivePhotoStyleOption(option.key);
+                              onChangeOverlayStyle({ ...overlayStyle, ...option.style });
+                            }}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.quickControlGroup}>
+                      <div style={styles.contentSetLabel}>{messages.instagram.aspectRatioLabel}</div>
+                      <div style={styles.quickOptionRow}>
+                        {aspectRatioOptions.map((option) => (
+                          <button
+                            key={option.key}
+                            type="button"
+                            style={{
+                              ...styles.quickOptionButton,
+                              ...(selectedAspectRatio === option.key ? styles.quickOptionButtonActive : null),
+                              ...(imageFitMode === "original" ? styles.quickOptionButtonDisabled : null),
+                            }}
+                            aria-pressed={selectedAspectRatio === option.key}
+                            disabled={imageFitMode === "original"}
+                            onClick={() => onChangeOverlayStyle({ ...overlayStyle, aspectRatio: option.key })}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.quickControlGroup}>
+                      <div style={styles.contentSetLabel}>{messages.instagram.imageFitModeLabel}</div>
+                      <div style={styles.quickOptionRow}>
+                        {imageFitModeOptions.map((option) => (
+                          <button
+                            key={option.key}
+                            type="button"
+                            style={{
+                              ...styles.quickOptionButton,
+                              ...(imageFitMode === option.key ? styles.quickOptionButtonActive : null),
+                            }}
+                            aria-pressed={imageFitMode === option.key}
+                            onClick={() => onChangeOverlayStyle({ ...overlayStyle, imageFitMode: option.key })}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </section>
 
                   <section style={styles.editGroupCard}>
-                    <div style={styles.presetHeaderRow}>
-                      <div style={styles.contentSetLabel}>{messages.instagram.comboPresetSectionTitle}</div>
-                    </div>
-                    <div style={styles.presetButtons}>
-                      {comboPresets.map((item) => {
-                        const isSelectedPreset = isSamePartialOverlayStyle(item.style);
-
-                        return (
+                    <div style={styles.quickControlGroup}>
+                      <div style={styles.contentSetLabel}>{messages.instagram.cameraStyleLabel}</div>
+                      <div style={styles.quickOptionRow}>
+                        {cameraStyleOptions.map((option) => (
                           <button
-                            key={item.key}
+                            key={option.key}
                             type="button"
                             style={{
-                              ...styles.presetCardButton,
-                              ...(isSelectedPreset ? styles.presetCardButtonSelected : null),
+                              ...styles.quickOptionButton,
+                              ...((overlayStyle.cameraStyle ?? "none") === option.key
+                                ? styles.quickOptionButtonActive
+                                : null),
                             }}
-                            aria-pressed={isSelectedPreset}
-                            onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...item.style })}
+                            aria-pressed={(overlayStyle.cameraStyle ?? "none") === option.key}
+                            onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...option.style })}
                           >
-                            <span style={styles.presetCardTopLine}>
-                              <span style={styles.presetCardName}>{item.label}</span>
-                              {isSelectedPreset ? (
-                                <span style={styles.presetSelectedBadge}>
-                                  {messages.instagram.selectedPresetBadge}
-                                </span>
-                              ) : null}
-                            </span>
-                            <span style={styles.presetCardDescription}>{item.description}</span>
+                            {option.label}
                           </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.quickControlGroup}>
+                      <div style={styles.contentSetLabel}>{messages.instagram.frameStyleLabel}</div>
+                      <div style={styles.quickOptionRow}>
+                        {frameStyleOptions.map((option) => (
+                          <button
+                            key={option.key}
+                            type="button"
+                            style={{
+                              ...styles.quickOptionButton,
+                              ...(frameStyle === option.key ? styles.quickOptionButtonActive : null),
+                            }}
+                            aria-pressed={frameStyle === option.key}
+                            onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...option.style })}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.quickControlGroup}>
+                      <div style={styles.contentSetLabel}>{messages.instagram.focusStyleLabel}</div>
+                      <div style={styles.quickOptionRow}>
+                        {focusStyleOptions.map((option) => (
+                          <div key={option.key} style={styles.quickOptionWithInfo}>
+                            <button
+                              type="button"
+                              style={{
+                                ...styles.quickOptionButton,
+                                ...(renderConfig.focusStyle === option.key
+                                  ? styles.quickOptionButtonActive
+                                  : null),
+                              }}
+                              aria-pressed={renderConfig.focusStyle === option.key}
+                              onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...option.style })}
+                            >
+                              <span>{option.label}</span>
+                            </button>
+                            <button
+                              type="button"
+                              style={styles.quickInfoButton}
+                              aria-expanded={expandedFocusOptionKey === option.key}
+                              onClick={() =>
+                                setExpandedFocusOptionKey((current) =>
+                                  current === option.key ? null : option.key,
+                                )
+                              }
+                            >
+                              ?
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      {focusStyleOptions.map((option) => {
+                        const isExpanded = expandedFocusOptionKey === option.key;
+
+                        if (!isExpanded) {
+                          return null;
+                        }
+
+                        return (
+                          <div key={`${option.key}-detail`} style={styles.focusOptionDetail}>
+                            {option.description}
+                          </div>
                         );
                       })}
                     </div>
+                    {isFocusStyle ? (
+                      <div style={styles.quickControlGroup}>
+                        <div style={styles.contentSetLabel}>{messages.instagram.focusEdgeLabel}</div>
+                        <div style={styles.quickOptionRow}>
+                          {focusEdgeOptions.map((option) => (
+                            <button
+                              key={option.key}
+                              type="button"
+                              style={{
+                                ...styles.quickOptionButton,
+                                ...((overlayStyle.focusEdge ?? "soft") === option.key
+                                  ? styles.quickOptionButtonActive
+                                  : null),
+                              }}
+                              aria-pressed={(overlayStyle.focusEdge ?? "soft") === option.key}
+                              onClick={() => handleFocusEdgeChange(option.key)}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {isManualFocusStyle ? (
+                      <div style={styles.manualFocusPanel}>
+                        <label style={styles.selectField}>
+                          <span style={styles.inlineLabelWithInfo}>
+                            <span style={styles.contentSetLabel}>{messages.instagram.manualFocusRadiusLabel}</span>
+                            <button
+                              type="button"
+                              style={styles.quickInfoButton}
+                              aria-expanded={isManualFocusHelpExpanded}
+                              onClick={() => setIsManualFocusHelpExpanded((current) => !current)}
+                            >
+                              ?
+                            </button>
+                          </span>
+                          <input
+                            type="range"
+                            min="0.15"
+                            max="0.5"
+                            step="0.01"
+                            value={renderConfig.focusArea.radius}
+                            onChange={handleManualFocusRadiusChange}
+                            style={styles.range}
+                          />
+                          <span style={styles.manualFocusRangeHint}>
+                            <span>{messages.instagram.manualFocusNarrowLabel}</span>
+                            <span>{messages.instagram.manualFocusWideLabel}</span>
+                          </span>
+                        </label>
+                        {isManualFocusHelpExpanded ? (
+                          <p style={styles.manualFocusHelp}>{messages.instagram.manualFocusHelp}</p>
+                        ) : null}
+                        {renderConfig.toneStyle === "bw" ? (
+                          <label style={styles.manualFocusCheckbox}>
+                            <input
+                              type="checkbox"
+                              checked={overlayStyle.focusColorMode === "color-pop"}
+                              onChange={(event) =>
+                                onChangeOverlayStyle({
+                                  ...overlayStyle,
+                                  focusColorMode: event.target.checked ? "color-pop" : "none",
+                                })
+                              }
+                            />
+                            <span style={styles.manualFocusCheckboxText}>
+                              <strong>{messages.instagram.colorFocusLabel}</strong>
+                              <small>{messages.instagram.colorFocusHelp}</small>
+                            </span>
+                          </label>
+                        ) : null}
+                        <button
+                          type="button"
+                          style={styles.manualFocusResetButton}
+                          onClick={() => updateManualFocusArea(DEFAULT_FOCUS_AREA)}
+                        >
+                          {messages.instagram.manualFocusResetButton}
+                        </button>
+                      </div>
+                    ) : null}
                   </section>
 
                   <section style={styles.editGroupCard}>
@@ -2722,6 +3176,60 @@ export function AnalysisResultPanel({
                             style={styles.textInput}
                           />
                           <span style={styles.fieldHint}>{messages.instagram.frameTextHelp}</span>
+                        </label>
+                      ) : null}
+                      <label style={styles.manualFocusCheckbox}>
+                        <input
+                          type="checkbox"
+                          checked={overlayStyle.grainEnabled === true}
+                          onChange={(event) => handleGrainEnabledChange(event.target.checked)}
+                        />
+                        <span style={styles.manualFocusCheckboxText}>
+                          <strong>{messages.instagram.grainLabel}</strong>
+                          <small>{messages.instagram.grainHelp}</small>
+                        </span>
+                      </label>
+                      {overlayStyle.grainEnabled === true ? (
+                        <label style={styles.selectField}>
+                          <span style={styles.contentSetLabel}>
+                            {messages.instagram.grainLabel} ({Math.round(grainIntensityValue * 100)}%)
+                          </span>
+                          <input
+                            type="range"
+                            min="0.05"
+                            max="0.22"
+                            step="0.01"
+                            value={grainIntensityValue}
+                            onChange={handleGrainIntensityChange}
+                            style={styles.range}
+                          />
+                        </label>
+                      ) : null}
+                      <label style={styles.manualFocusCheckbox}>
+                        <input
+                          type="checkbox"
+                          checked={overlayStyle.vignetteEnabled === true}
+                          onChange={(event) => handleVignetteEnabledChange(event.target.checked)}
+                        />
+                        <span style={styles.manualFocusCheckboxText}>
+                          <strong>{messages.instagram.vignetteLabel}</strong>
+                          <small>{messages.instagram.vignetteHelp}</small>
+                        </span>
+                      </label>
+                      {overlayStyle.vignetteEnabled === true ? (
+                        <label style={styles.selectField}>
+                          <span style={styles.contentSetLabel}>
+                            {messages.instagram.vignetteLabel} ({Math.round(vignetteIntensityValue * 100)}%)
+                          </span>
+                          <input
+                            type="range"
+                            min="0.08"
+                            max="0.26"
+                            step="0.01"
+                            value={vignetteIntensityValue}
+                            onChange={handleVignetteIntensityChange}
+                            style={styles.range}
+                          />
                         </label>
                       ) : null}
                       {frameStyle !== "none" ? (
@@ -3025,12 +3533,36 @@ export function AnalysisResultPanel({
                 <section style={styles.editGroupCard}>
                   <div style={styles.currentTextGrid}>
                     <div style={styles.currentTextCard}>
-                      <span style={styles.contentSetLabel}>{messages.instagram.currentOverlayTextTitle}</span>
+                      <div style={styles.currentTextHeaderRow}>
+                        <span style={styles.contentSetLabel}>{messages.instagram.currentOverlayTextTitle}</span>
+                        <label style={styles.inlineToggleLabel}>
+                          <input
+                            type="checkbox"
+                            checked={overlayStyle.textHidden === true}
+                            onChange={(event) => handleTextHiddenChange(event.target.checked)}
+                          />
+                          <span>{messages.instagram.hideOverlayTextLabel}</span>
+                        </label>
+                      </div>
                       <strong style={styles.currentTextValue}>{selectedOverlayText}</strong>
+                      <input
+                        type="text"
+                        value={selectedOverlayText}
+                        onChange={(event) => onSelectOverlayText(event.target.value)}
+                        placeholder={messages.instagram.overlayTextPlaceholder}
+                        style={styles.inlineTextInput}
+                      />
                     </div>
                     <div style={styles.currentTextCard}>
                       <span style={styles.contentSetLabel}>{messages.instagram.currentCaptionTitle}</span>
                       <p style={styles.currentCaptionValue}>{selectedCaptionText}</p>
+                      <textarea
+                        value={selectedCaptionText}
+                        onChange={(event) => onSelectCaptionText(event.target.value)}
+                        placeholder={messages.instagram.overlayCaptionPlaceholder}
+                        style={styles.inlineTextarea}
+                        rows={4}
+                      />
                     </div>
                   </div>
                   <button
@@ -3871,6 +4403,17 @@ const styles: Record<string, CSSProperties> = {
     flexWrap: "wrap",
     gap: "6px",
   },
+  quickOptionWithInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+  },
+  inlineLabelWithInfo: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    width: "fit-content",
+  },
   quickOptionButton: {
     display: "inline-flex",
     flexDirection: "column",
@@ -3883,6 +4426,18 @@ const styles: Record<string, CSSProperties> = {
     padding: "7px 10px",
     background: "rgba(255,255,255,0.88)",
     color: "#4c443c",
+    fontSize: "12px",
+    fontWeight: 800,
+    cursor: "pointer",
+  },
+  quickInfoButton: {
+    flexShrink: 0,
+    width: "24px",
+    height: "24px",
+    borderRadius: "999px",
+    border: "1px solid rgba(64, 47, 30, 0.14)",
+    background: "rgba(255,255,255,0.92)",
+    color: "#4f4439",
     fontSize: "12px",
     fontWeight: 800,
     cursor: "pointer",
@@ -3940,7 +4495,7 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: "999px",
     border: "2px solid rgba(255,250,244,0.92)",
     boxShadow:
-      "0 0 0 1px rgba(19,16,13,0.34), 0 0 0 999px rgba(19,16,13,0.15)",
+      "0 0 0 1px rgba(19,16,13,0.34), 0 0 36px rgba(19,16,13,0.18)",
     transform: "translate(-50%, -50%)",
     pointerEvents: "none",
   },
@@ -3957,6 +4512,29 @@ const styles: Record<string, CSSProperties> = {
     inset: 0,
     zIndex: 1,
     transition: "opacity 140ms ease, background 140ms ease",
+  },
+  livePreviewVignette: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 2,
+    pointerEvents: "none",
+  },
+  livePreviewGrain: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 2,
+    pointerEvents: "none",
+    backgroundImage:
+      "radial-gradient(rgba(255,255,255,0.42) 0.7px, transparent 0.9px), radial-gradient(rgba(0,0,0,0.28) 0.7px, transparent 0.95px)",
+    backgroundSize: "6px 6px, 8px 8px",
+    backgroundPosition: "0 0, 2px 3px",
+    mixBlendMode: "overlay",
+  },
+  livePreviewFocusMask: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 2,
+    pointerEvents: "none",
   },
   manualFocusPanel: {
     display: "grid",
@@ -4015,7 +4593,8 @@ const styles: Record<string, CSSProperties> = {
     zIndex: 3,
     border: "10px solid rgba(255, 245, 224, 0.92)",
     borderRadius: "12px",
-    boxShadow: "inset 0 0 0 1px rgba(33, 23, 18, 0.22), 0 12px 28px rgba(19,16,13,0.2)",
+    background: "linear-gradient(135deg, rgba(255,248,233,0.96), rgba(237,220,188,0.92))",
+    boxShadow: "inset 0 0 0 1px rgba(33, 23, 18, 0.22), 0 12px 28px rgba(19,16,13,0.12)",
     pointerEvents: "none",
   },
   livePreviewFilmDate: {
@@ -4143,7 +4722,7 @@ const styles: Record<string, CSSProperties> = {
     zIndex: 6,
     border: "1.5px solid rgba(255,250,244,0.82)",
     borderRadius: "18px",
-    boxShadow: "inset 0 0 0 1px rgba(19,16,13,0.08)",
+    boxShadow: "inset 0 0 0 1px rgba(214,198,177,0.42)",
     pointerEvents: "none",
   },
   livePreviewMinimalDate: {
@@ -4158,13 +4737,16 @@ const styles: Record<string, CSSProperties> = {
     whiteSpace: "nowrap",
   },
   livePreviewText: {
-    position: "relative",
+    position: "absolute",
     zIndex: 4,
+    display: "flex",
+    flexDirection: "column",
     maxWidth: "78%",
     width: "fit-content",
     borderRadius: "14px",
     padding: "8px 12px",
     color: "#fffaf4",
+    pointerEvents: "none",
     transition:
       "transform 140ms ease, color 140ms ease, background 140ms ease, font-size 140ms ease",
     whiteSpace: "pre-wrap",
@@ -4177,6 +4759,11 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: "18px",
     background: "rgba(255,255,255,0.64)",
     border: "1px solid rgba(64, 47, 30, 0.08)",
+  },
+  photoPresetTopGrid: {
+    display: "grid",
+    gap: "12px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
   },
   editSplitGrid: {
     display: "grid",
@@ -4236,12 +4823,52 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.35,
     letterSpacing: "-0.02em",
   },
+  currentTextHeaderRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "8px",
+    flexWrap: "wrap",
+  },
   currentCaptionValue: {
     margin: 0,
     color: "#4c443c",
     fontSize: "13px",
     lineHeight: 1.55,
     whiteSpace: "pre-wrap",
+  },
+  inlineToggleLabel: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    fontSize: "12px",
+    color: "#71553d",
+    fontWeight: 700,
+  },
+  inlineTextInput: {
+    width: "100%",
+    minWidth: 0,
+    marginTop: "6px",
+    borderRadius: "14px",
+    border: "1px solid rgba(64, 47, 30, 0.12)",
+    background: "rgba(255,255,255,0.94)",
+    padding: "11px 12px",
+    fontSize: "14px",
+    color: "#231d18",
+  },
+  inlineTextarea: {
+    width: "100%",
+    minWidth: 0,
+    marginTop: "6px",
+    resize: "vertical",
+    borderRadius: "14px",
+    border: "1px solid rgba(64, 47, 30, 0.12)",
+    background: "rgba(255,255,255,0.94)",
+    padding: "11px 12px",
+    fontSize: "14px",
+    lineHeight: 1.6,
+    color: "#231d18",
+    fontFamily: "inherit",
   },
   detailListButton: {
     justifySelf: "start",
@@ -4330,6 +4957,24 @@ const styles: Record<string, CSSProperties> = {
     display: "grid",
     gap: "10px",
     gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+  },
+  reviewActionHintCard: {
+    display: "grid",
+    gap: "8px",
+    padding: "16px 18px",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,0.72)",
+    border: "1px solid rgba(64, 47, 30, 0.08)",
+  },
+  reviewActionHintTitle: {
+    color: "#231d18",
+    fontSize: "15px",
+    fontWeight: 700,
+  },
+  reviewActionHintText: {
+    color: "rgba(64, 47, 30, 0.72)",
+    fontSize: "13px",
+    lineHeight: 1.55,
   },
   primaryActionButton: {
     display: "inline-flex",
@@ -4558,7 +5203,7 @@ const styles: Record<string, CSSProperties> = {
   presetButtons: {
     display: "grid",
     gap: "8px",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
   },
   presetSaveRow: {
     display: "flex",
@@ -4580,7 +5225,7 @@ const styles: Record<string, CSSProperties> = {
   presetCardButton: {
     display: "grid",
     gap: "4px",
-    minWidth: "136px",
+    minWidth: 0,
     padding: "9px 10px",
     borderRadius: "15px",
     border: "1px solid rgba(64, 47, 30, 0.12)",
@@ -4600,10 +5245,26 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     justifyContent: "space-between",
   },
+  presetInfoButton: {
+    flexShrink: 0,
+    width: "24px",
+    height: "24px",
+    borderRadius: "999px",
+    border: "1px solid rgba(64, 47, 30, 0.14)",
+    background: "rgba(255,255,255,0.92)",
+    color: "#4f4439",
+    fontSize: "12px",
+    fontWeight: 800,
+    cursor: "pointer",
+  },
   presetCardName: {
     fontSize: "12px",
     fontWeight: 700,
     color: "#2f2923",
+    display: "-webkit-box",
+    WebkitLineClamp: 1,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
   },
   presetSelectedBadge: {
     flexShrink: 0,
@@ -4628,6 +5289,28 @@ const styles: Record<string, CSSProperties> = {
     fontSize: "10px",
     color: "#7b6f63",
     lineHeight: 1.3,
+  },
+  presetCardDetail: {
+    display: "grid",
+    gap: "4px",
+    maxHeight: 0,
+    opacity: 0,
+    overflow: "hidden",
+    transition: "max-height 180ms ease, opacity 180ms ease",
+  },
+  presetCardDetailExpanded: {
+    maxHeight: "88px",
+    opacity: 1,
+  },
+  focusOptionDetail: {
+    marginTop: "4px",
+    borderRadius: "12px",
+    padding: "8px 10px",
+    background: "rgba(245, 240, 233, 0.9)",
+    color: "#5a4b3c",
+    fontSize: "11px",
+    lineHeight: 1.45,
+    transition: "max-height 180ms ease, opacity 180ms ease",
   },
   hiddenInput: {
     display: "none",

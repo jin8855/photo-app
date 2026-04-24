@@ -138,6 +138,12 @@ const defaultOverlayStyle: ContentOverlayStyle = {
   frameStyle: "none",
   frameText: "",
   frameTextColor: "white",
+  focusEdge: "soft",
+  grainEnabled: false,
+  grainIntensity: 0.12,
+  vignetteEnabled: false,
+  vignetteIntensity: 0.14,
+  textHidden: false,
   dateStampEnabled: false,
   dateStampValue: "",
   filmNumberEnabled: false,
@@ -244,6 +250,10 @@ export function AnalysisResultViewer({
   };
 
   const generateContentSet = async (notify = true, variantOverride?: number) => {
+    if (isGeneratingContentSet) {
+      return;
+    }
+
     try {
       setIsGeneratingContentSet(true);
       const nextVariant = variantOverride ?? contentVariant;
@@ -287,6 +297,10 @@ export function AnalysisResultViewer({
   };
 
   const handleGenerateContentSet = async () => {
+    if (isGeneratingContentSet) {
+      return;
+    }
+
     await generateContentSet(true, contentVariant + 1);
   };
 
