@@ -379,6 +379,29 @@ export function AnalysisResultPanel({
       frameTextColor,
     });
   };
+  const handleFrameStyleChange = (nextStyle: Partial<ContentOverlayStyle>) => {
+    const nextFrameStyle = nextStyle.frameStyle;
+    const currentImageFitMode = overlayStyle.imageFitMode ?? "original";
+
+    if (nextFrameStyle === "polaroid" && currentImageFitMode === "original") {
+      if (typeof window !== "undefined") {
+        window.alert("출력비율과 사진 맞춤을 1:1, 안 잘리게 맞춤으로 변경합니다.");
+      }
+
+      onChangeOverlayStyle({
+        ...overlayStyle,
+        ...nextStyle,
+        aspectRatio: "1:1",
+        imageFitMode: "contain",
+      });
+      return;
+    }
+
+    onChangeOverlayStyle({
+      ...overlayStyle,
+      ...nextStyle,
+    });
+  };
   const handleGrainEnabledChange = (checked: boolean) => {
     onChangeOverlayStyle({
       ...overlayStyle,
@@ -3021,7 +3044,7 @@ export function AnalysisResultPanel({
                               ...(frameStyle === option.key ? styles.quickOptionButtonActive : null),
                             }}
                             aria-pressed={frameStyle === option.key}
-                            onClick={() => onChangeOverlayStyle({ ...overlayStyle, ...option.style })}
+                            onClick={() => handleFrameStyleChange(option.style)}
                           >
                             {option.label}
                           </button>
