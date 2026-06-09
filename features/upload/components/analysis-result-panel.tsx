@@ -223,7 +223,8 @@ export function AnalysisResultPanel({
   const hashtagBundle = analysis.hashtags.join(" ");
   const heroPhrase = analysis.phrases[0]?.phrase ?? analysis.short_review;
   const isActionLike =
-    analysis.photo_style_type === "action_speed" || analysis.photo_style_type === "sports_energy";
+    (analysis.photo_style_type === "action_speed" || analysis.photo_style_type === "sports_energy") &&
+    (analysis.mood_category === "speed_control" || analysis.mood_category === "competitive_focus");
   const isSoftLike =
     analysis.photo_style_type === "spring_healing" ||
     analysis.photo_style_type === "natural_healing" ||
