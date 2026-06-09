@@ -235,6 +235,7 @@ export function AnalysisResultPanel({
     analysis.photo_style_type === "reflective_fog" ||
     analysis.photo_style_type === "urban_mood" ||
     analysis.photo_style_type === "other";
+  const themeName = isActionLike ? "action" : isSoftLike ? "soft" : isQuietLike ? "quiet" : "default";
   const photoTips = getPhotoTipsForAnalysis(analysis, deviceType);
   const selectedPhotoTip = photoTips.find((tip) => tip.category === selectedPhotoTipCategory) ?? null;
   const selectedPhotoTipDetailRows = selectedPhotoTip
@@ -247,6 +248,22 @@ export function AnalysisResultPanel({
         { label: messages.photoTips.deviceHintLabel, value: selectedPhotoTip.deviceHint },
       ].filter((row) => row.value)
     : [];
+
+  useEffect(() => {
+    console.log("[theme-debug]", {
+      analysisId: analysis.id,
+      mood_category: analysis.mood_category,
+      photo_style_type: analysis.photo_style_type,
+      isActionLike,
+      themeName,
+    });
+  }, [
+    analysis.id,
+    analysis.mood_category,
+    analysis.photo_style_type,
+    isActionLike,
+    themeName,
+  ]);
 
   const resolveHeroOverlayPlacement = (position: string): CSSProperties => {
     switch (position) {

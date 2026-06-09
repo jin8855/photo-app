@@ -434,6 +434,14 @@ export function AnalysisResultViewer({
     const nextOverlayText = analysis.phrases[0]?.phrase ?? analysis.short_review;
     const nextCaptionText = analysis.captions[0]?.caption ?? "";
 
+    console.log("[analysis-debug]", {
+      analysisId: analysis.id,
+      mood_category: analysis.mood_category,
+      photo_style_type: analysis.photo_style_type,
+      phrase0: analysis.phrases?.[0]?.phrase ?? null,
+      caption0: analysis.captions?.[0]?.caption ?? null,
+    });
+
     setSelectedOverlayText(nextOverlayText);
     setSelectedCaptionText(nextCaptionText);
     setOverlayStyle(defaultOverlayStyle);
