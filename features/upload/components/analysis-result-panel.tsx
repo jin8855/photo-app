@@ -236,6 +236,7 @@ export function AnalysisResultPanel({
     analysis.photo_style_type === "urban_mood" ||
     analysis.photo_style_type === "other";
   const themeName = isActionLike ? "action" : isSoftLike ? "soft" : isQuietLike ? "quiet" : "default";
+  const useReviewActionTheme = false;
   const photoTips = getPhotoTipsForAnalysis(analysis, deviceType);
   const selectedPhotoTip = photoTips.find((tip) => tip.category === selectedPhotoTipCategory) ?? null;
   const selectedPhotoTipDetailRows = selectedPhotoTip
@@ -2038,7 +2039,7 @@ export function AnalysisResultPanel({
             <section
               style={{
                 ...styles.mainContentResultCard,
-                ...(isActionLike ? styles.mainContentResultCardAction : null),
+                ...(useReviewActionTheme ? styles.mainContentResultCardAction : null),
                 ...(isSoftLike ? styles.mainContentResultCardSoft : null),
                 ...(isQuietLike ? styles.mainContentResultCardQuiet : null),
               }}
@@ -2048,7 +2049,7 @@ export function AnalysisResultPanel({
                   <div
                     style={{
                       ...styles.contentSetTitle,
-                      ...(isActionLike ? styles.contentSetTitleAction : null),
+                      ...(useReviewActionTheme ? styles.contentSetTitleAction : null),
                     }}
                   >
                     {messages.cta.title}
@@ -2056,7 +2057,7 @@ export function AnalysisResultPanel({
                   <div
                     style={{
                       ...styles.commerceSalesDescription,
-                      ...(isActionLike ? styles.commerceSalesDescriptionAction : null),
+                      ...(useReviewActionTheme ? styles.commerceSalesDescriptionAction : null),
                     }}
                   >
                     {messages.cta.description}
@@ -2076,11 +2077,11 @@ export function AnalysisResultPanel({
                 <div style={styles.mainContentResultGrid}>
                   <div style={styles.contentSetBlock}>
                     <div
-                      style={{
-                        ...styles.contentSetLabel,
-                        ...(isActionLike ? styles.contentSetLabelAction : null),
-                      }}
-                    >
+                    style={{
+                      ...styles.contentSetLabel,
+                      ...(useReviewActionTheme ? styles.contentSetLabelAction : null),
+                    }}
+                  >
                       {messages.instagram.contentSetImageLabel}
                     </div>
                     <div
@@ -2100,13 +2101,13 @@ export function AnalysisResultPanel({
                     <div
                       style={{
                         ...styles.currentSelectionCard,
-                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                        ...(useReviewActionTheme ? styles.currentSelectionCardAction : null),
                       }}
                     >
                       <div
                         style={{
                           ...styles.contentSetLabel,
-                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                          ...(useReviewActionTheme ? styles.contentSetLabelAction : null),
                         }}
                       >
                         {messages.cta.currentPhrase}
@@ -2114,7 +2115,7 @@ export function AnalysisResultPanel({
                       <div
                         style={{
                           ...styles.currentSelectionText,
-                          ...(isActionLike ? styles.currentSelectionTextAction : null),
+                          ...(useReviewActionTheme ? styles.currentSelectionTextAction : null),
                           ...(isSoftLike ? styles.currentSelectionTextSoft : null),
                           ...(isQuietLike ? styles.currentSelectionTextQuiet : null),
                         }}
@@ -2125,13 +2126,13 @@ export function AnalysisResultPanel({
                     <div
                       style={{
                         ...styles.currentSelectionCard,
-                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                        ...(useReviewActionTheme ? styles.currentSelectionCardAction : null),
                       }}
                     >
                       <div
                         style={{
                           ...styles.contentSetLabel,
-                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                          ...(useReviewActionTheme ? styles.contentSetLabelAction : null),
                         }}
                       >
                         {messages.cta.currentCaption}
@@ -2139,7 +2140,7 @@ export function AnalysisResultPanel({
                       <div
                         style={{
                           ...styles.currentSelectionSubtext,
-                          ...(isActionLike ? styles.currentSelectionSubtextAction : null),
+                          ...(useReviewActionTheme ? styles.currentSelectionSubtextAction : null),
                         }}
                       >
                         {selectedCaptionText}
@@ -2200,13 +2201,13 @@ export function AnalysisResultPanel({
                     <div
                       style={{
                         ...styles.currentSelectionCard,
-                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                        ...(useReviewActionTheme ? styles.currentSelectionCardAction : null),
                       }}
                     >
                       <div
                         style={{
                           ...styles.contentSetLabel,
-                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                          ...(useReviewActionTheme ? styles.contentSetLabelAction : null),
                         }}
                       >
                         {messages.cta.currentPhrase}
@@ -2214,7 +2215,7 @@ export function AnalysisResultPanel({
                       <div
                         style={{
                           ...styles.currentSelectionText,
-                          ...(isActionLike ? styles.currentSelectionTextAction : null),
+                          ...(useReviewActionTheme ? styles.currentSelectionTextAction : null),
                           ...(isSoftLike ? styles.currentSelectionTextSoft : null),
                           ...(isQuietLike ? styles.currentSelectionTextQuiet : null),
                         }}
@@ -2225,13 +2226,13 @@ export function AnalysisResultPanel({
                     <div
                       style={{
                         ...styles.currentSelectionCard,
-                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                        ...(useReviewActionTheme ? styles.currentSelectionCardAction : null),
                       }}
                     >
                       <div
                         style={{
                           ...styles.contentSetLabel,
-                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                          ...(useReviewActionTheme ? styles.contentSetLabelAction : null),
                         }}
                       >
                         {messages.cta.currentCaption}
@@ -2239,7 +2240,7 @@ export function AnalysisResultPanel({
                       <div
                         style={{
                           ...styles.currentSelectionSubtext,
-                          ...(isActionLike ? styles.currentSelectionSubtextAction : null),
+                          ...(useReviewActionTheme ? styles.currentSelectionSubtextAction : null),
                         }}
                       >
                         {selectedCaptionText}
@@ -2248,13 +2249,13 @@ export function AnalysisResultPanel({
                     <div
                       style={{
                         ...styles.currentSelectionCard,
-                        ...(isActionLike ? styles.currentSelectionCardAction : null),
+                        ...(useReviewActionTheme ? styles.currentSelectionCardAction : null),
                       }}
                     >
                       <div
                         style={{
                           ...styles.contentSetLabel,
-                          ...(isActionLike ? styles.contentSetLabelAction : null),
+                          ...(useReviewActionTheme ? styles.contentSetLabelAction : null),
                         }}
                       >
                         {messages.instagram.contentSetHashtagLabel}
@@ -2262,7 +2263,7 @@ export function AnalysisResultPanel({
                       <div
                         style={{
                           ...styles.currentSelectionSubtext,
-                          ...(isActionLike ? styles.currentSelectionSubtextAction : null),
+                          ...(useReviewActionTheme ? styles.currentSelectionSubtextAction : null),
                         }}
                       >
                         {hashtagBundle}
@@ -2322,7 +2323,7 @@ export function AnalysisResultPanel({
               <section
                 style={{
                   ...styles.recommendedPhraseCard,
-                  ...(isActionLike ? styles.recommendedPhraseCardAction : null),
+                  ...(useReviewActionTheme ? styles.recommendedPhraseCardAction : null),
                   ...(isSoftLike ? styles.recommendedPhraseCardSoft : null),
                   ...(isQuietLike ? styles.recommendedPhraseCardQuiet : null),
                 }}
@@ -2331,7 +2332,7 @@ export function AnalysisResultPanel({
                   <div
                     style={{
                       ...styles.contentSetTitle,
-                      ...(isActionLike ? styles.contentSetTitleAction : null),
+                      ...(useReviewActionTheme ? styles.contentSetTitleAction : null),
                     }}
                   >
                     {messages.recommendedPhrase}
@@ -2359,7 +2360,7 @@ export function AnalysisResultPanel({
                 <div
                   style={{
                     ...styles.recommendedPhraseBody,
-                    ...(isActionLike ? styles.recommendedPhraseBodyAction : null),
+                    ...(useReviewActionTheme ? styles.recommendedPhraseBodyAction : null),
                     ...(isSoftLike ? styles.recommendedPhraseBodySoft : null),
                     ...(isQuietLike ? styles.recommendedPhraseBodyQuiet : null),
                   }}
@@ -2370,7 +2371,7 @@ export function AnalysisResultPanel({
                   <span
                     style={{
                       ...styles.recommendedPhraseScore,
-                      ...(isActionLike ? styles.recommendedPhraseScoreAction : null),
+                      ...(useReviewActionTheme ? styles.recommendedPhraseScoreAction : null),
                       ...(isSoftLike ? styles.recommendedPhraseScoreSoft : null),
                     }}
                   >
@@ -2379,7 +2380,7 @@ export function AnalysisResultPanel({
                   <span
                     style={{
                       ...styles.recommendedPhraseReason,
-                      ...(isActionLike ? styles.recommendedPhraseReasonAction : null),
+                      ...(useReviewActionTheme ? styles.recommendedPhraseReasonAction : null),
                     }}
                   >
                     {analysis.phrases[0].reason}
@@ -2429,7 +2430,7 @@ export function AnalysisResultPanel({
                           style={{
                             ...styles.photoTipCard,
                             ...(index === 0 ? styles.photoTipCardPrimary : null),
-                            ...(index === 0 && isActionLike ? styles.photoTipCardPrimaryAction : null),
+                            ...(index === 0 && useReviewActionTheme ? styles.photoTipCardPrimaryAction : null),
                             ...(index === 0 && isSoftLike ? styles.photoTipCardPrimarySoft : null),
                             ...(index === 0 && isQuietLike ? styles.photoTipCardPrimaryQuiet : null),
                             ...(isSelected ? styles.photoTipCardActive : null),
@@ -2439,7 +2440,7 @@ export function AnalysisResultPanel({
                             style={{
                               ...styles.photoTipCategory,
                               ...(index === 0 ? styles.photoTipCategoryPrimary : null),
-                              ...(index === 0 && isActionLike ? styles.photoTipCategoryPrimaryAction : null),
+                              ...(index === 0 && useReviewActionTheme ? styles.photoTipCategoryPrimaryAction : null),
                               ...(index === 0 && isSoftLike ? styles.photoTipCategoryPrimarySoft : null),
                               ...(index === 0 && isQuietLike ? styles.photoTipCategoryPrimaryQuiet : null),
                             }}
@@ -2450,7 +2451,7 @@ export function AnalysisResultPanel({
                             style={{
                               ...styles.photoTipTitle,
                               ...(index === 0 ? styles.photoTipTitlePrimary : null),
-                              ...(index === 0 && isActionLike ? styles.photoTipTitlePrimaryAction : null),
+                              ...(index === 0 && useReviewActionTheme ? styles.photoTipTitlePrimaryAction : null),
                               ...(index === 0 && isSoftLike ? styles.photoTipTitlePrimarySoft : null),
                               ...(index === 0 && isQuietLike ? styles.photoTipTitlePrimaryQuiet : null),
                             }}
@@ -2461,7 +2462,7 @@ export function AnalysisResultPanel({
                             style={{
                               ...styles.photoTipBody,
                               ...(index === 0 ? styles.photoTipBodyPrimary : null),
-                              ...(index === 0 && isActionLike ? styles.photoTipBodyPrimaryAction : null),
+                              ...(index === 0 && useReviewActionTheme ? styles.photoTipBodyPrimaryAction : null),
                               ...(index === 0 && isSoftLike ? styles.photoTipBodyPrimarySoft : null),
                               ...(index === 0 && isQuietLike ? styles.photoTipBodyPrimaryQuiet : null),
                             }}
@@ -2473,7 +2474,7 @@ export function AnalysisResultPanel({
                               type="button"
                               style={{
                                 ...styles.photoTipDetailButton,
-                                ...(index === 0 && isActionLike ? styles.photoTipDetailButtonAction : null),
+                                ...(index === 0 && useReviewActionTheme ? styles.photoTipDetailButtonAction : null),
                               }}
                               onClick={() =>
                                 setSelectedPhotoTipCategory((current) =>
